@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.env
+*.log
+.coverage
+htmlcov/
+
+# Node/Frontend
+node_modules/
+/frontend/dist/
+/frontend/dist-ssr/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.local
+
+# IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS specific
+.DS_Store
+Thumbs.db
+.directory
+
+# Build output
+/build/
+/dist/
+
+# Local environment variables
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
