@@ -1,0 +1,104 @@
+openapi: 3.0.0
+info:
+  title: Draft API
+  version: 1.0.0
+  description: API endpoints for managing assignment drafts
+paths:
+  /health:
+    get:
+      summary: Check API health
+      description: Returns health status of the draft service
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  
+  /assignments/{id}/drafts:
+    post:
+      summary: Create a new draft for an assignment
+      description: Saves a new draft for the specified assignment
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID of the assignment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  example: "# Introduction\n\nThis research paper explores the impact of..."
+                version:
+                  type: integer
+                  example: 1
+                  description: Optional version number (auto-incremented if not provided)
+                metadata:
+                  type: object
+                  description: Additional metadata about the draft
+                  example: { "word_count": 1250, "time_spent": "2h30m" }
+      responses:
+        '201':
+          description: Draft created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 10
+                  assignment_id:
+                    type: integer
+                    example: 5
+                  version:
+                    type: integer
+                    example: 1
+                  content:
+                    type: string
+                    example: "# Introduction\n\nThis research paper explores the impact of..."
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-05T14:30:00Z"
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Content is required"
+        '404':
+          description: Assignment not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Assignment not found"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

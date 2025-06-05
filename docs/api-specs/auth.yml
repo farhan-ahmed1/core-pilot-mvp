@@ -1,0 +1,124 @@
+openapi: 3.0.0
+info:
+  title: Authentication API
+  version: 1.0.0
+  description: API endpoints for authentication
+paths:
+  /health:
+    get:
+      summary: Check API health
+      description: Returns health status of the auth service
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  
+  /register:
+    post:
+      summary: Register a new user
+      description: Creates a new user account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "********"
+                username:
+                  type: string
+                  example: "newuser"
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "user123"
+                  email:
+                    type: string
+                    example: "user@example.com"
+                  username:
+                    type: string
+                    example: "newuser"
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Email already in use"
+  
+  /login:
+    post:
+      summary: Log in user
+      description: Authenticates user and returns token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "********"
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "user123"
+                      email:
+                        type: string
+                        example: "user@example.com"
+                      username:
+                        type: string
+                        example: "newuser"
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid credentials"

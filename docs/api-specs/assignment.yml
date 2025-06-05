@@ -1,0 +1,139 @@
+openapi: 3.0.0
+info:
+  title: Assignment API
+  version: 1.0.0
+  description: API endpoints for assignment management
+paths:
+  /health:
+    get:
+      summary: Check API health
+      description: Returns health status of the assignment service
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  
+  /courses/{id}/assignments:
+    get:
+      summary: Get assignments for a course
+      description: Returns a list of all assignments for the specified course
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID of the course
+      responses:
+        '200':
+          description: List of assignments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  assignments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        title:
+                          type: string
+                          example: "Research Paper"
+                        description:
+                          type: string
+                          example: "Write a research paper on an approved topic"
+                        due_date:
+                          type: string
+                          format: date-time
+                          example: "2025-07-15T23:59:59Z"
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Course not found"
+  
+  /assignments:
+    post:
+      summary: Create a new assignment
+      description: Creates a new assignment with the provided information
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                course_id:
+                  type: integer
+                  example: 1
+                title:
+                  type: string
+                  example: "Final Project"
+                description:
+                  type: string
+                  example: "Implement a web application with all learned concepts"
+                due_date:
+                  type: string
+                  format: date-time
+                  example: "2025-07-30T23:59:59Z"
+      responses:
+        '201':
+          description: Assignment created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 2
+                  course_id:
+                    type: integer
+                    example: 1
+                  title:
+                    type: string
+                    example: "Final Project"
+                  description:
+                    type: string
+                    example: "Implement a web application with all learned concepts"
+                  due_date:
+                    type: string
+                    format: date-time
+                    example: "2025-07-30T23:59:59Z"
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Title and course_id are required"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

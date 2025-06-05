@@ -1,0 +1,144 @@
+openapi: 3.0.0
+info:
+  title: AI API
+  version: 1.0.0
+  description: API endpoints for AI-assisted features
+paths:
+  /assignments/{id}/breakdown:
+    post:
+      summary: Generate assignment breakdown
+      description: Uses AI to generate a structured breakdown of the assignment
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID of the assignment
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                preferences:
+                  type: object
+                  description: User preferences for the breakdown
+                  example: { "detail_level": "high", "focus_areas": ["methodology", "analysis"] }
+      responses:
+        '200':
+          description: Assignment breakdown generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sections:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                          example: "Introduction"
+                        description:
+                          type: string
+                          example: "Provide context and background for the research"
+                        suggested_content:
+                          type: string
+                          example: "Begin with a brief overview of the topic and why it matters..."
+                  suggestions:
+                    type: array
+                    items:
+                      type: string
+                      example: "Consider comparing at least 3 different methodologies"
+        '404':
+          description: Assignment not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Assignment not found"
+
+  /assignments/{id}/feedback:
+    post:
+      summary: Generate feedback on assignment draft
+      description: Uses AI to analyze draft and provide feedback
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID of the assignment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                draft_id:
+                  type: integer
+                  example: 5
+                focus_areas:
+                  type: array
+                  items:
+                    type: string
+                  example: ["structure", "argumentation", "clarity"]
+      responses:
+        '200':
+          description: Feedback generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  feedback_items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        category:
+                          type: string
+                          example: "structure"
+                        comments:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              text:
+                                type: string
+                                example: "Consider reorganizing section 3 to improve flow"
+                              severity:
+                                type: string
+                                enum: [minor, moderate, major]
+                                example: "moderate"
+                  overall_assessment:
+                    type: string
+                    example: "Your draft shows good understanding of the topic but needs work on organization and clarity."
+        '404':
+          description: Assignment or draft not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Assignment or draft not found"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
