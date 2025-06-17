@@ -50,6 +50,13 @@ docker-compose.*.yml
 !docker-compose.yml
 docker/data/
 .dockerignore
+docker-compose.yml
 
 # other
 .github/copilot/
+*.mako
+
+# Alembic versions
+backend/database/alembic/versions/
+backend/database/alembic/scripts/
+
