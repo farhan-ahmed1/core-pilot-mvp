@@ -21,6 +21,17 @@ class UserResponse(BaseModel):
     role: str
     created_at: datetime
 
+class UserProfileResponse(BaseModel):
+    id: str
+    email: str
+    full_name: str
+    photo_url: Optional[str] = None
+    created_at: datetime
+
+class UserProfileUpdateRequest(BaseModel):
+    full_name: Optional[str] = None
+    photo_url: Optional[str] = None
+
 # --- Firebase token verification ---
 def verify_firebase_token(id_token: str):
     try:
@@ -76,4 +87,34 @@ def login_user(req: RegisterRequest, db: Session = Depends(get_db)):
     ).fetchone()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    return row_to_dict(user)
+
+@router.get("/profile", response_model=UserProfileResponse)
+def get_profile(request: Request, db: Session = Depends(get_db)):
+    # Assume user is authenticated and email is in request.state.user_email
+    # For Sprint 0, stub: get first user
+    user = db.execute(text("SELECT id, email, full_name, photo_url, created_at FROM users LIMIT 1")).fetchone()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return row_to_dict(user)
+
+@router.put("/profile", response_model=UserProfileResponse)
+def update_profile(update: UserProfileUpdateRequest, db: Session = Depends(get_db)):
+    # For Sprint 0, update first user only
+    user = db.execute(text("SELECT id FROM users LIMIT 1")).fetchone()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    update_fields = []
+    params = {"id": user.id}
+    if update.full_name is not None:
+        update_fields.append("full_name = :full_name")
+        params["full_name"] = update.full_name
+    if update.photo_url is not None:
+        update_fields.append("photo_url = :photo_url")
+        params["photo_url"] = update.photo_url
+    if not update_fields:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    db.execute(text(f"UPDATE users SET {', '.join(update_fields)}, updated_at = now() WHERE id = :id"), params)
+    db.commit()
+    user = db.execute(text("SELECT id, email, full_name, photo_url, created_at FROM users WHERE id = :id"), {"id": user.id}).fetchone()
     return row_to_dict(user)
