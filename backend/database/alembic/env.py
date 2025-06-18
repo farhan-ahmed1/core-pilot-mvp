@@ -1,14 +1,28 @@
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-from base import Base
-
+from sqlalchemy import engine_from_config, pool
 from alembic import context
+
+# Path adjustments: add project root so imports work
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+sys.path.insert(0, project_root)
+
+# Import Base and models
+from database.base import Base
+from database.models import User, Course, Assignment, Draft, Feedback
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+# Override Alembic URL from env
+# Use DATABASE_URL from environment (set via Docker Compose env_file)
+db_url = os.getenv('DATABASE_URL')
+if not db_url:
+    raise RuntimeError('DATABASE_URL is not set in environment')
+config.set_main_option('sqlalchemy.url', db_url.replace("%", "%%"))
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

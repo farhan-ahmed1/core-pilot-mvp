@@ -1,0 +1,1 @@
+# Make 'schemas' a Python package
