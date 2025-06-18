@@ -60,3 +60,6 @@ docker-compose.yml
 backend/database/alembic/versions/
 backend/database/alembic/scripts/
 
+# firebase
+backend/firebase-service-account.json
+

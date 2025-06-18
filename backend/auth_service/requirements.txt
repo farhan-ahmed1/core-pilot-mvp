@@ -3,3 +3,4 @@ uvicorn
 sqlalchemy
 alembic
 python-dotenv
+firebase-admin
