@@ -20,14 +20,10 @@ import {
   Tab,
   Badge,
   Avatar,
-  Stack,
-  Divider,
   Skeleton,
   Alert,
   Snackbar,
   Paper,
-  LinearProgress,
-  Tooltip,
   ToggleButton,
   ToggleButtonGroup,
   Fade,
@@ -35,12 +31,10 @@ import {
 } from '@mui/material';
 import {
   Search as SearchIcon,
-  FilterList as FilterIcon,
   Sort as SortIcon,
   ViewList as ListViewIcon,
   ViewModule as GridViewIcon,
   Assignment as AssignmentIcon,
-  Schedule as ScheduleIcon,
   Warning as WarningIcon,
   CheckCircle as CheckCircleIcon,
   Add as AddIcon,
@@ -200,7 +194,7 @@ const AssignmentsListPage: React.FC = () => {
   }, [assignments]);
 
   // Event handlers
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
   };
 
@@ -228,7 +222,7 @@ const AssignmentsListPage: React.FC = () => {
     }));
   };
 
-  const handleViewModeChange = (event: React.MouseEvent<HTMLElement>, newViewMode: 'list' | 'grid') => {
+  const handleViewModeChange = (_: React.MouseEvent<HTMLElement>, newViewMode: 'list' | 'grid') => {
     if (newViewMode !== null) {
       setViewMode(newViewMode);
     }

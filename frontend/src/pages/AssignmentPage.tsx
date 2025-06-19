@@ -21,13 +21,9 @@ import {
   Snackbar,
   Paper,
   Grid,
-  Fab,
-  CircularProgress,
   Skeleton,
-  Fade,
   Stack,
-  Avatar,
-  Tooltip
+  Avatar
 } from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
@@ -39,8 +35,6 @@ import {
   Save as SaveIcon,
   Cancel as CancelIcon,
   Add as AddIcon,
-  School as SchoolIcon,
-  AccessTime as AccessTimeIcon,
   CalendarToday as CalendarIcon,
   Description as DescriptionIcon
 } from '@mui/icons-material';

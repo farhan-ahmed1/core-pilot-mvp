@@ -15,7 +15,6 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  CircularProgress,
   ListItemButton,
   ListItemSecondaryAction,
   Dialog,
@@ -26,7 +25,6 @@ import {
   Alert,
   Snackbar,
   Fab,
-  Tooltip,
   Paper,
   Avatar,
   LinearProgress,
@@ -45,10 +43,7 @@ import {
   Schedule as ScheduleIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  MenuBook as MenuBookIcon,
-  GradingOutlined as GradingIcon,
-  Analytics as AnalyticsIcon
-} from '@mui/icons-material';
+  GradingOutlined as GradingIcon} from '@mui/icons-material';
 import { alpha, useTheme } from '@mui/material/styles';
 
 // Import shared components
@@ -62,26 +57,7 @@ import {
   updateCourse, 
   deleteCourse, 
   Course,
-  CourseCreate,
-  CourseUpdate 
-} from '../services/courseService';
-
-// Import assignment API functions
-import {
-  getAssignmentsByCourse,
-  getUpcomingAssignments,
-  AssignmentListItem,
-  formatDueDate,
-  getDueDateStatus,
-  getDueDateColor
-} from '../services/assignmentService';
-
-// Animation variants for Framer Motion-like effects
-const fadeInUp = {
-  initial: { opacity: 0, transform: 'translateY(20px)' },
-  animate: { opacity: 1, transform: 'translateY(0px)' },
-  transition: { duration: 0.5 }
-};
+  CourseCreate} from '../services/courseService';
 
 interface Assignment {
   id: number;
@@ -114,7 +90,6 @@ const DashboardPage: React.FC = () => {
   // Assignment dialog state
   const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
   const [selectedCourseForAssignment, setSelectedCourseForAssignment] = useState<number | undefined>(undefined);
-  const [realAssignments, setRealAssignments] = useState<{ [courseId: number]: AssignmentListItem[] }>({});
 
   // Mock assignment data with better structure
   const [assignments] = useState<Assignment[]>([
@@ -257,7 +232,7 @@ const DashboardPage: React.FC = () => {
     setSelectedCourseForAssignment(undefined);
   };
 
-  const handleAssignmentCreated = (assignment: any) => {
+  const handleAssignmentCreated = (_: any) => {
     setSnackbar({
       open: true,
       message: 'Assignment created successfully!',
