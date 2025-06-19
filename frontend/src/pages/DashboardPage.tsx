@@ -8,12 +8,15 @@ import {
   CardContent,
   Button,
   Grid,
-  Paper,
   Avatar,
   Chip,
   Fab,
   Zoom,
   Fade,
+  Skeleton,
+  IconButton,
+  LinearProgress,
+  Stack,
   alpha,
   useTheme
 } from '@mui/material';
@@ -21,29 +24,34 @@ import {
   Add as AddIcon,
   School as SchoolIcon,
   Assignment as AssignmentIcon,
-  Warning as WarningIcon,
   AccessTime as AccessTimeIcon,
   CheckCircle as CheckCircleIcon,
-  RocketLaunch as RocketIcon,
-  CalendarToday as CalendarIcon} from '@mui/icons-material';
+  TrendingUp as TrendingUpIcon,
+  CalendarToday as CalendarIcon,
+  ArrowForward as ArrowForwardIcon,
+  Timeline as TimelineIcon,
+  TrackChanges as TargetIcon,
+  MoreHoriz as MoreHorizIcon,
+  Analytics as ActivityIcon
+} from '@mui/icons-material';
 
-// Import services and components
+// Import services and hooks
 import { useAuth } from '../contexts/AuthContext';
 import { 
   getAssignmentStats, 
   getUpcomingAssignments, 
   AssignmentStats, 
   AssignmentListItem,
-  formatDueDate,
   getDueDateStatus,
   getDueDateColor
 } from '../services/assignmentService';
-import CourseGrid from '../components/CourseGrid';
+import { useCourseManagement } from '../hooks/useCourseManagement';
+
+// Import dialogs and components
 import CourseDialogs from '../components/CourseDialogs';
 import CourseActions from '../components/CourseActions';
 import AssignmentDialog from '../components/AssignmentDialog';
 import LoadingScreen from '../components/LoadingScreen';
-import { useCourseManagement } from '../hooks/useCourseManagement';
 
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -98,13 +106,10 @@ const DashboardPage: React.FC = () => {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      
-      // Load stats and upcoming assignments in parallel
       const [statsData, upcomingData] = await Promise.all([
         getAssignmentStats(),
-        getUpcomingAssignments(5)
+        getUpcomingAssignments(4)
       ]);
-      
       setStats(statsData);
       setUpcomingAssignments(upcomingData);
     } catch (error) {
@@ -120,174 +125,146 @@ const DashboardPage: React.FC = () => {
   };
 
   const handleAssignmentCreated = () => {
-    // Refresh dashboard data
     loadDashboardData();
     setAssignmentDialogOpen(false);
     setPreselectedCourseId(undefined);
   };
 
-  const handleAssignmentClick = (assignmentId: number) => {
-    navigate(`/assignments/${assignmentId}`);
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
   };
 
-  const renderWelcomeSection = () => (
-    <Fade in timeout={800}>
-      <Paper
-        elevation={0}
-        sx={{
-          p: 4,
-          mb: 4,
-          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-          color: 'white',
-          borderRadius: 4,
-          position: 'relative',
-          overflow: 'hidden'
-        }}
-      >
-        {/* Decorative background elements */}
-        <Box
-          sx={{
-            position: 'absolute',
-            top: -50,
-            right: -50,
-            width: 200,
-            height: 200,
-            borderRadius: '50%',
-            bgcolor: alpha('#fff', 0.1),
-            zIndex: 0
-          }}
-        />
-        
-        <Box sx={{ position: 'relative', zIndex: 1 }}>
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Box>
-              <Typography variant="h3" component="h1" fontWeight="800" gutterBottom>
-                Welcome back, {userProfile?.full_name?.split(' ')[0] || 'Student'}!
-              </Typography>
-              <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 400, mb: 3 }}>
-                {new Date().toLocaleDateString('en-US', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
-              </Typography>
-              
-              {/* Quick stats */}
-              <Box display="flex" gap={3} alignItems="center">
-                <Box display="flex" alignItems="center" gap={1}>
-                  <SchoolIcon />
-                  <Typography variant="body1" fontWeight={600}>
-                    {courses.length} Courses
-                  </Typography>
-                </Box>
-                <Box display="flex" alignItems="center" gap={1}>
-                  <AssignmentIcon />
-                  <Typography variant="body1" fontWeight={600}>
-                    {stats?.total_assignments || 0} Assignments
-                  </Typography>
-                </Box>
-                {stats && stats.overdue > 0 && (
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <WarningIcon color="warning" />
-                    <Typography variant="body1" fontWeight={600} color="warning.light">
-                      {stats.overdue} Overdue
-                    </Typography>
-                  </Box>
-                )}
-              </Box>
-            </Box>
-            
-            <Avatar
-              sx={{
-                width: 100,
-                height: 100,
-                bgcolor: alpha('#fff', 0.15),
-                border: `3px solid ${alpha('#fff', 0.3)}`
-              }}
-            >
-              <RocketIcon sx={{ fontSize: 50 }} />
-            </Avatar>
-          </Box>
-        </Box>
-      </Paper>
-    </Fade>
+  const getStatusMessage = () => {
+    if (!stats) return 'Ready to learn something new today?';
+    const messages = [];
+    if (stats.due_soon > 0) messages.push(`${stats.due_soon} assignments due soon`);
+    if (stats.overdue > 0) messages.push(`${stats.overdue} overdue items that need attention`);
+    
+    if (messages.length === 0) return 'You\'re all caught up! Great work staying organized.';
+    return `You have ${messages.join(' and ')}.`;
+  };
+
+  const getPriorityBorder = (assignment: AssignmentListItem) => {
+    const status = getDueDateStatus(assignment);
+    if (status === 'overdue') return 'error.main';
+    if (status === 'due-soon') return 'warning.main';
+    return 'grey.200';
+  };
+
+  const getPriorityBackground = (assignment: AssignmentListItem) => {
+    const status = getDueDateStatus(assignment);
+    if (status === 'overdue') return alpha(theme.palette.error.main, 0.05);
+    if (status === 'due-soon') return alpha(theme.palette.warning.main, 0.05);
+    return 'grey.50';
+  };
+
+  const formatDueDateMessage = (assignment: AssignmentListItem) => {
+    const date = new Date(assignment.due_date);
+    const today = new Date();
+    const diffTime = date.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) return `${Math.abs(diffDays)} days overdue`;
+    if (diffDays === 0) return 'Due today';
+    if (diffDays === 1) return 'Due tomorrow';
+    return `Due in ${diffDays} days`;
+  };
+
+  // Component for welcome section
+  const WelcomeSection = () => (
+    <Box sx={{ mb: 4 }}>
+      <Typography variant="h4" fontWeight="600" color="text.primary" gutterBottom>
+        {getGreeting()}, {userProfile?.full_name?.split(' ')[0] || 'Student'}
+      </Typography>
+      <Typography variant="body1" color="text.secondary">
+        {getStatusMessage()}
+      </Typography>
+    </Box>
   );
 
-  const renderStatsGrid = () => {
-    if (!stats) return null;
+  // Component for statistics cards
+  const StatsGrid = () => {
+    if (!stats) return <StatsGridSkeleton />;
 
     const statCards = [
       {
         title: 'Total Assignments',
         value: stats.total_assignments,
-        icon: <AssignmentIcon sx={{ fontSize: 40 }} />,
-        color: theme.palette.primary.main,
-        bgColor: alpha(theme.palette.primary.main, 0.1)
+        icon: <TargetIcon />,
+        bgColor: 'grey.100',
+        iconColor: 'grey.600',
       },
       {
-        title: 'Overdue',
-        value: stats.overdue,
-        icon: <WarningIcon sx={{ fontSize: 40 }} />,
-        color: theme.palette.error.main,
-        bgColor: alpha(theme.palette.error.main, 0.1)
+        title: 'Completed',
+        value: stats.total_assignments - stats.overdue - stats.due_soon - stats.upcoming,
+        icon: <CheckCircleIcon />,
+        bgColor: 'success.50',
+        iconColor: 'success.600',
       },
       {
         title: 'Due Soon',
         value: stats.due_soon,
-        icon: <AccessTimeIcon sx={{ fontSize: 40 }} />,
-        color: theme.palette.warning.main,
-        bgColor: alpha(theme.palette.warning.main, 0.1)
+        icon: <AccessTimeIcon />,
+        bgColor: 'warning.50',
+        iconColor: 'warning.600',
       },
       {
-        title: 'Upcoming',
-        value: stats.upcoming,
-        icon: <CheckCircleIcon sx={{ fontSize: 40 }} />,
-        color: theme.palette.success.main,
-        bgColor: alpha(theme.palette.success.main, 0.1)
+        title: 'Completion Rate',
+        value: stats.total_assignments > 0 ? Math.round(((stats.total_assignments - stats.overdue - stats.due_soon - stats.upcoming) / stats.total_assignments) * 100) : 0,
+        suffix: '%',
+        icon: <TrendingUpIcon />,
+        bgColor: 'primary.50',
+        iconColor: 'primary.600',
       }
     ];
 
     return (
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {statCards.map((stat, index) => (
-          <Grid key={stat.title} size={{ xs: 12, sm: 6, md: 3 }}>
-            <Fade in timeout={600 + (index * 100)}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }} key={stat.title}>
+            <Fade in timeout={400 + (index * 100)}>
               <Card
-                elevation={2}
+                elevation={0}
                 sx={{
-                  p: 3,
+                  border: 1,
+                  borderColor: 'grey.200',
                   borderRadius: 3,
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  transition: 'all 0.2s ease',
                   '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: `0 8px 30px ${alpha(stat.color, 0.2)}`
+                    boxShadow: theme.shadows[2]
                   }
                 }}
               >
-                <Box display="flex" alignItems="center" justifyContent="space-between">
-                  <Box>
-                    <Typography variant="h3" fontWeight="800" color={stat.color}>
-                      {stat.value}
-                    </Typography>
-                    <Typography variant="body1" fontWeight={600} color="text.secondary">
-                      {stat.title}
-                    </Typography>
+                <CardContent sx={{ p: 3 }}>
+                  <Box display="flex" alignItems="center" justifyContent="space-between">
+                    <Box>
+                      <Typography variant="caption" fontWeight="500" color="text.secondary" gutterBottom>
+                        {stat.title}
+                      </Typography>
+                      <Typography variant="h4" fontWeight="600" color="text.primary">
+                        {stat.value}{stat.suffix || ''}
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 2,
+                        bgcolor: stat.bgColor,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      {React.cloneElement(stat.icon, { 
+                        sx: { fontSize: 24, color: stat.iconColor } 
+                      })}
+                    </Box>
                   </Box>
-                  <Box
-                    sx={{
-                      width: 60,
-                      height: 60,
-                      borderRadius: 2,
-                      bgcolor: stat.bgColor,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    {React.cloneElement(stat.icon, { sx: { ...stat.icon.props.sx, color: stat.color } })}
-                  </Box>
-                </Box>
+                </CardContent>
               </Card>
             </Fade>
           </Grid>
@@ -296,113 +273,341 @@ const DashboardPage: React.FC = () => {
     );
   };
 
-  const renderUpcomingAssignments = () => (
-    <Card elevation={2} sx={{ mb: 4, borderRadius: 3 }}>
-      <CardContent sx={{ p: 4 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-          <Box display="flex" alignItems="center" gap={2}>
-            <Avatar sx={{ bgcolor: theme.palette.info.main }}>
-              <CalendarIcon />
-            </Avatar>
-            <Box>
-              <Typography variant="h5" fontWeight="700">
-                Upcoming Assignments
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Your next {upcomingAssignments.length} assignments
-              </Typography>
+  // Skeleton for loading state
+  const StatsGridSkeleton = () => (
+    <Grid container spacing={3} sx={{ mb: 4 }}>
+      {[1, 2, 3, 4].map((item) => (
+        <Grid size={{ xs: 12, sm: 6, md: 3 }} key={item}>
+          <Card sx={{ p: 3, border: 1, borderColor: 'grey.200' }}>
+            <Skeleton variant="rectangular" height={60} />
+          </Card>
+        </Grid>
+      ))}
+    </Grid>
+  );
+
+  // Main content grid
+  const MainContent = () => (
+    <Grid container spacing={4}>
+      {/* Left Column - Upcoming Assignments */}
+      <Grid size={{ xs: 12, lg: 8 }}>
+        <Card elevation={0} sx={{ border: 1, borderColor: 'grey.200', borderRadius: 3 }}>
+          <Box sx={{ p: 3, borderBottom: 1, borderColor: 'grey.200' }}>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box>
+                <Typography variant="h6" fontWeight="600" gutterBottom>
+                  Upcoming Assignments
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Your next deadlines and priorities
+                </Typography>
+              </Box>
+              <Button
+                variant="text"
+                endIcon={<ArrowForwardIcon />}
+                onClick={() => navigate('/assignments')}
+                sx={{ 
+                  textTransform: 'none', 
+                  fontWeight: 500,
+                  color: 'text.secondary'
+                }}
+              >
+                View all
+              </Button>
             </Box>
           </Box>
-          <Button
-            variant="outlined"
-            onClick={() => navigate('/assignments')}
-            sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 600 }}
-          >
-            View All
-          </Button>
-        </Box>
+          
+          <Box sx={{ p: 3 }}>
+            {upcomingAssignments.length === 0 ? (
+              <Box textAlign="center" py={4}>
+                <Box
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 2,
+                    bgcolor: 'success.50',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mx: 'auto',
+                    mb: 2
+                  }}
+                >
+                  <CheckCircleIcon sx={{ color: 'success.600', fontSize: 24 }} />
+                </Box>
+                <Typography variant="h6" fontWeight="600" gutterBottom>
+                  All caught up!
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  No upcoming deadlines. Great work staying organized!
+                </Typography>
+              </Box>
+            ) : (
+              <Stack spacing={2}>
+                {upcomingAssignments.map((assignment, index) => {
+                  const status = getDueDateStatus(assignment);
+                  const statusColor = getDueDateColor(status);
+                  const course = courses.find(c => c.id === assignment.course_id);
 
-        {upcomingAssignments.length === 0 ? (
-          <Box textAlign="center" py={4}>
-            <Avatar sx={{ mx: 'auto', mb: 2, bgcolor: alpha(theme.palette.primary.main, 0.1) }}>
-              <CheckCircleIcon color="primary" />
-            </Avatar>
-            <Typography variant="h6" fontWeight="600" gutterBottom>
-              All caught up!
-            </Typography>
-            <Typography variant="body2" color="text.secondary" mb={3}>
-              You have no upcoming assignments. Create a new one to get started.
-            </Typography>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => handleQuickCreateAssignment()}
-              sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 700 }}
-            >
-              Create Assignment
-            </Button>
-          </Box>
-        ) : (
-          <Box>
-            {upcomingAssignments.map((assignment, index) => {
-              const status = getDueDateStatus(assignment);
-              const statusColor = getDueDateColor(status);
-              const course = courses.find(c => c.id === assignment.course_id);
-
-              return (
-                <Fade key={assignment.id} in timeout={400 + (index * 100)}>
-                  <Card
-                    elevation={1}
-                    sx={{
-                      mb: 2,
-                      borderRadius: 2,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      '&:hover': {
-                        transform: 'translateX(8px)',
-                        boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.15)}`
-                      }
-                    }}
-                    onClick={() => handleAssignmentClick(assignment.id)}
-                  >
-                    <CardContent sx={{ p: 3 }}>
-                      <Box display="flex" justifyContent="space-between" alignItems="center">
-                        <Box flex={1}>
-                          <Box display="flex" alignItems="center" gap={2} mb={1}>
-                            <Chip
-                              label={course?.name || 'Unknown Course'}
-                              size="small"
-                              variant="outlined"
-                              sx={{ borderRadius: 2 }}
-                            />
-                            <Chip
-                              label={status === 'overdue' ? 'Overdue' : status === 'due-soon' ? 'Due Soon' : 'Upcoming'}
-                              color={statusColor}
-                              size="small"
-                              variant="filled"
-                              sx={{ borderRadius: 2, fontWeight: 600 }}
-                            />
+                  return (
+                    <Fade key={assignment.id} in timeout={300 + (index * 100)}>
+                      <Card
+                        elevation={0}
+                        sx={{
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          border: 1,
+                          borderColor: 'grey.200',
+                          borderRadius: 2,
+                          borderLeftWidth: 4,
+                          borderLeftColor: getPriorityBorder(assignment),
+                          bgcolor: getPriorityBackground(assignment),
+                          '&:hover': {
+                            boxShadow: theme.shadows[2],
+                            transform: 'translateY(-1px)'
+                          }
+                        }}
+                        onClick={() => navigate(`/assignments/${assignment.id}`)}
+                      >
+                        <CardContent sx={{ p: 2.5 }}>
+                          <Box display="flex" alignItems="start" justifyContent="space-between">
+                            <Box flex={1}>
+                              <Box display="flex" alignItems="center" gap={1} mb={1}>
+                                <Chip
+                                  label={status === 'overdue' ? 'Overdue' : status === 'due-soon' ? 'Due Soon' : 'Upcoming'}
+                                  color={statusColor}
+                                  size="small"
+                                  variant="filled"
+                                  sx={{ 
+                                    borderRadius: 1, 
+                                    fontWeight: 500, 
+                                    fontSize: '0.6875rem',
+                                    height: 20
+                                  }}
+                                />
+                                <Typography variant="caption" color="text.secondary">
+                                  {course?.name || 'Unknown Course'}
+                                </Typography>
+                              </Box>
+                              <Typography variant="subtitle1" fontWeight="500" gutterBottom>
+                                {assignment.title}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {formatDueDateMessage(assignment)}
+                              </Typography>
+                              
+                              {/* Progress bar placeholder - could be implemented with assignment progress */}
+                              <Box sx={{ mt: 2 }}>
+                                <Box display="flex" alignItems="center" justifyContent="space-between" mb={0.5}>
+                                  <Typography variant="caption" color="text.secondary">
+                                    Progress
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary">
+                                    65%
+                                  </Typography>
+                                </Box>
+                                <LinearProgress 
+                                  variant="determinate" 
+                                  value={65} 
+                                  sx={{ 
+                                    height: 4, 
+                                    borderRadius: 2,
+                                    bgcolor: 'grey.200',
+                                    '& .MuiLinearProgress-bar': {
+                                      bgcolor: 'grey.900',
+                                      borderRadius: 2
+                                    }
+                                  }} 
+                                />
+                              </Box>
+                            </Box>
+                            <IconButton 
+                              size="small" 
+                              sx={{ 
+                                opacity: 0, 
+                                '.MuiCard-root:hover &': { opacity: 1 },
+                                transition: 'opacity 0.2s'
+                              }}
+                            >
+                              <MoreHorizIcon sx={{ fontSize: 16, color: 'grey.400' }} />
+                            </IconButton>
                           </Box>
-                          <Typography variant="h6" fontWeight="600" gutterBottom>
-                            {assignment.title}
+                        </CardContent>
+                      </Card>
+                    </Fade>
+                  );
+                })}
+              </Stack>
+            )}
+          </Box>
+        </Card>
+      </Grid>
+
+      {/* Right Column - Sidebar */}
+      <Grid size={{ xs: 12, lg: 4 }}>
+        <Stack spacing={3}>
+          {/* Active Courses */}
+          <Card elevation={0} sx={{ border: 1, borderColor: 'grey.200', borderRadius: 3 }}>
+            <Box sx={{ p: 3, borderBottom: 1, borderColor: 'grey.200' }}>
+              <Typography variant="h6" fontWeight="600" gutterBottom>
+                Active Courses
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Your current semester
+              </Typography>
+            </Box>
+            <Box sx={{ p: 3 }}>
+              {courses.length === 0 ? (
+                <Box textAlign="center" py={2}>
+                  <Typography variant="body2" color="text.secondary" mb={2}>
+                    No courses yet
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    onClick={handleOpenCreateDialog}
+                    sx={{ textTransform: 'none', fontWeight: 500 }}
+                  >
+                    Add Course
+                  </Button>
+                </Box>
+              ) : (
+                <Stack spacing={2}>
+                  {courses.slice(0, 4).map((course) => (
+                    <Box key={course.id} sx={{ cursor: 'pointer' }}>
+                      <Box 
+                        display="flex" 
+                        alignItems="center" 
+                        justifyContent="space-between" 
+                        p={1.5} 
+                        borderRadius={2}
+                        sx={{
+                          '&:hover': {
+                            bgcolor: 'grey.50'
+                          }
+                        }}
+                      >
+                        <Box display="flex" alignItems="center" gap={1.5}>
+                          <Box
+                            sx={{
+                              width: 12,
+                              height: 12,
+                              borderRadius: '50%',
+                              bgcolor: theme.palette.primary.main
+                            }}
+                          />
+                          <Box>
+                            <Typography variant="body2" fontWeight="500">
+                              {course.name}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {course.term}
+                            </Typography>
+                          </Box>
+                        </Box>
+                        <Box textAlign="right">
+                          <Typography variant="body2" fontWeight="500">
+                            0/5
                           </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            Due: {formatDueDate(assignment.due_date)}
+                          <Typography variant="caption" color="text.secondary">
+                            assignments
                           </Typography>
                         </Box>
-                        <Avatar sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1) }}>
-                          <AssignmentIcon color="primary" />
-                        </Avatar>
                       </Box>
-                    </CardContent>
-                  </Card>
-                </Fade>
-              );
-            })}
-          </Box>
-        )}
-      </CardContent>
-    </Card>
+                      <Box sx={{ mx: 1.5, mt: 1 }}>
+                        <LinearProgress 
+                          variant="determinate" 
+                          value={0} 
+                          sx={{ 
+                            height: 2, 
+                            borderRadius: 1,
+                            bgcolor: 'grey.200',
+                            '& .MuiLinearProgress-bar': {
+                              bgcolor: 'grey.900',
+                              borderRadius: 1
+                            }
+                          }} 
+                        />
+                      </Box>
+                    </Box>
+                  ))}
+                </Stack>
+              )}
+            </Box>
+          </Card>
+
+          {/* Quick Actions */}
+          <Card elevation={0} sx={{ border: 1, borderColor: 'grey.200', borderRadius: 3 }}>
+            <Box sx={{ p: 3, borderBottom: 1, borderColor: 'grey.200' }}>
+              <Typography variant="h6" fontWeight="600">
+                Quick Actions
+              </Typography>
+            </Box>
+            <Box sx={{ p: 3 }}>
+              <Stack spacing={1}>
+                <Button
+                  fullWidth
+                  variant="text"
+                  startIcon={<AddIcon />}
+                  onClick={() => handleQuickCreateAssignment()}
+                  sx={{
+                    justifyContent: 'flex-start',
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    py: 1.5,
+                    px: 2,
+                    borderRadius: 2,
+                    color: 'text.primary',
+                    '&:hover': {
+                      bgcolor: 'grey.50'
+                    }
+                  }}
+                >
+                  Add Assignment
+                </Button>
+                <Button
+                  fullWidth
+                  variant="text"
+                  startIcon={<CalendarIcon />}
+                  sx={{
+                    justifyContent: 'flex-start',
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    py: 1.5,
+                    px: 2,
+                    borderRadius: 2,
+                    color: 'text.primary',
+                    '&:hover': {
+                      bgcolor: 'grey.50'
+                    }
+                  }}
+                >
+                  View Calendar
+                </Button>
+                <Button
+                  fullWidth
+                  variant="text"
+                  startIcon={<ActivityIcon />}
+                  sx={{
+                    justifyContent: 'flex-start',
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    py: 1.5,
+                    px: 2,
+                    borderRadius: 2,
+                    color: 'text.primary',
+                    '&:hover': {
+                      bgcolor: 'grey.50'
+                    }
+                  }}
+                >
+                  View Analytics
+                </Button>
+              </Stack>
+            </Box>
+          </Card>
+        </Stack>
+      </Grid>
+    </Grid>
   );
 
   if (loading || coursesLoading) {
@@ -412,85 +617,13 @@ const DashboardPage: React.FC = () => {
   return (
     <>
       {/* Welcome Section */}
-      {renderWelcomeSection()}
+      <WelcomeSection />
 
       {/* Statistics Grid */}
-      {renderStatsGrid()}
+      <StatsGrid />
 
-      {/* Upcoming Assignments */}
-      {renderUpcomingAssignments()}
-
-      {/* Courses Section */}
-      <Card elevation={2} sx={{ mb: 4, borderRadius: 3 }}>
-        <CardContent sx={{ p: 4 }}>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-            <Box display="flex" alignItems="center" gap={2}>
-              <Avatar sx={{ bgcolor: theme.palette.secondary.main }}>
-                <SchoolIcon />
-              </Avatar>
-              <Box>
-                <Typography variant="h5" fontWeight="700">
-                  Your Courses
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Manage your {courses.length} active courses
-                </Typography>
-              </Box>
-            </Box>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={handleOpenCreateDialog}
-              sx={{ 
-                borderRadius: 3, 
-                textTransform: 'none', 
-                fontWeight: 700,
-                background: `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.secondary.dark})`
-              }}
-            >
-              Add Course
-            </Button>
-          </Box>
-
-          {courses.length === 0 ? (
-            <Box textAlign="center" py={6}>
-              <Avatar sx={{ mx: 'auto', mb: 2, bgcolor: alpha(theme.palette.secondary.main, 0.1), width: 64, height: 64 }}>
-                <SchoolIcon sx={{ fontSize: 32 }} color="secondary" />
-              </Avatar>
-              <Typography variant="h6" fontWeight="600" gutterBottom>
-                No courses yet
-              </Typography>
-              <Typography variant="body2" color="text.secondary" mb={3}>
-                Create your first course to start organizing your assignments
-              </Typography>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={handleOpenCreateDialog}
-                size="large"
-                sx={{ 
-                  borderRadius: 3, 
-                  textTransform: 'none', 
-                  fontWeight: 700,
-                  px: 4,
-                  py: 1.5 
-                }}
-              >
-                Create Your First Course
-              </Button>
-            </Box>
-          ) : (
-            <CourseGrid
-              courses={courses}
-              assignments={[]} // Will be populated from backend
-              onCourseEdit={handleOpenEditDialog}
-              onCourseDelete={handleDeleteCourse}
-              onAssignmentClick={handleAssignmentClick}
-              onAddAssignment={handleQuickCreateAssignment}
-            />
-          )}
-        </CardContent>
-      </Card>
+      {/* Main Content */}
+      <MainContent />
 
       {/* Course Management Dialogs */}
       <CourseDialogs
@@ -538,16 +671,22 @@ const DashboardPage: React.FC = () => {
         onAssignmentCreated={handleAssignmentCreated}
       />
 
-      {/* Floating Action Button for Quick Assignment Creation */}
+      {/* Floating Action Button */}
       <Zoom in={true}>
         <Fab
-          color="primary"
           onClick={() => handleQuickCreateAssignment()}
           sx={{
             position: 'fixed',
             bottom: 24,
             right: 24,
-            boxShadow: theme.shadows[12]
+            bgcolor: 'grey.900',
+            color: 'white',
+            boxShadow: theme.shadows[6],
+            '&:hover': {
+              bgcolor: 'grey.800',
+              transform: 'scale(1.05)',
+              boxShadow: theme.shadows[8]
+            }
           }}
         >
           <AddIcon />

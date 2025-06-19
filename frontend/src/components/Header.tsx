@@ -13,6 +13,8 @@ import {
   Divider,
   ListItemIcon,
   Badge,
+  TextField,
+  InputAdornment,
   alpha,
   useTheme
 } from '@mui/material';
@@ -22,16 +24,20 @@ import {
   Dashboard as DashboardIcon,
   Assignment as AssignmentIcon,
   School as SchoolIcon,
-  Notifications as NotificationsIcon
+  Notifications as NotificationsIcon,
+  Search as SearchIcon,
+  Menu as MenuIcon
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 interface HeaderProps {
   title?: string;
+  onMenuToggle?: () => void;
+  showMenuButton?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ title = 'Core Pilot' }) => {
+const Header: React.FC<HeaderProps> = ({ title = 'Core Pilot', onMenuToggle, showMenuButton = true }) => {
   const { userProfile, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -99,7 +105,20 @@ const Header: React.FC<HeaderProps> = ({ title = 'Core Pilot' }) => {
         color: 'text.primary'
       }}
     >
-      <Toolbar sx={{ px: { xs: 2, md: 4 }, py: 1 }}>
+      <Toolbar sx={{ px: { xs: 2, md: 4 }, py: 1, minHeight: '64px !important' }}>
+        {/* Mobile Menu Button */}
+        {showMenuButton && (
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            edge="start"
+            onClick={onMenuToggle}
+            sx={{ mr: 2, display: { lg: 'none' } }}
+          >
+            <MenuIcon />
+          </IconButton>
+        )}
+
         {/* Logo and Brand */}
         <Box 
           display="flex" 
@@ -109,71 +128,64 @@ const Header: React.FC<HeaderProps> = ({ title = 'Core Pilot' }) => {
         >
           <Box
             sx={{
-              width: 40,
-              height: 40,
+              width: 32,
+              height: 32,
               borderRadius: 2,
-              background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+              bgcolor: theme.palette.grey[900],
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               mr: 2
             }}
           >
-            <SchoolIcon sx={{ color: 'white', fontSize: 24 }} />
+            <SchoolIcon sx={{ color: 'white', fontSize: 20 }} />
           </Box>
           <Box>
-            <Typography variant="h6" fontWeight="800" sx={{ lineHeight: 1 }}>
+            <Typography variant="h6" fontWeight="600" sx={{ lineHeight: 1, fontSize: '1.25rem' }}>
               Core Pilot
             </Typography>
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-              AI-Enhanced Learning
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6875rem' }}>
+              Academic Dashboard
             </Typography>
           </Box>
         </Box>
 
-        {/* Page Title */}
-        <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', ml: 4 }}>
-          <Typography variant="h5" fontWeight="700" color="text.primary">
-            {getPageTitle()}
-          </Typography>
-        </Box>
+        {/* Spacer */}
+        <Box sx={{ flexGrow: 1 }} />
 
-        {/* Navigation Pills */}
-        <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1, mr: 3 }}>
-          <Button
-            onClick={navigateToDashboard}
-            startIcon={<DashboardIcon />}
-            variant={getActiveNavItem() === 'dashboard' ? 'contained' : 'text'}
+        {/* Search Bar */}
+        <Box sx={{ display: { xs: 'none', md: 'block' }, mr: 3 }}>
+          <TextField
+            placeholder="Search assignments..."
+            size="small"
+            variant="outlined"
             sx={{
-              borderRadius: 3,
-              textTransform: 'none',
-              fontWeight: 600,
-              px: 3,
-              ...(getActiveNavItem() === 'dashboard' && {
-                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
-              })
+              width: 280,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+                bgcolor: 'grey.50',
+                border: '1px solid',
+                borderColor: 'grey.200',
+                '&:hover': {
+                  borderColor: 'grey.300'
+                },
+                '&.Mui-focused': {
+                  borderColor: 'grey.900',
+                  boxShadow: `0 0 0 2px ${alpha(theme.palette.grey[900], 0.2)}`
+                }
+              },
+              '& .MuiOutlinedInput-input': {
+                fontSize: '0.875rem'
+              }
             }}
-          >
-            Dashboard
-          </Button>
-          <Button
-            onClick={navigateToAssignments}
-            startIcon={<AssignmentIcon />}
-            variant={getActiveNavItem() === 'assignments' ? 'contained' : 'text'}
-            sx={{
-              borderRadius: 3,
-              textTransform: 'none',
-              fontWeight: 600,
-              px: 3,
-              ...(getActiveNavItem() === 'assignments' && {
-                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
-              })
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ fontSize: 16, color: 'grey.400' }} />
+                </InputAdornment>
+              ),
             }}
-          >
-            Assignments
-          </Button>
+          />
         </Box>
 
         {/* User Profile Section */}
@@ -181,53 +193,41 @@ const Header: React.FC<HeaderProps> = ({ title = 'Core Pilot' }) => {
           {/* Notifications */}
           <IconButton
             sx={{
-              bgcolor: alpha(theme.palette.primary.main, 0.1),
+              color: 'grey.400',
               '&:hover': {
-                bgcolor: alpha(theme.palette.primary.main, 0.2)
+                color: 'grey.600',
+                bgcolor: 'transparent'
               }
             }}
           >
             <Badge badgeContent={0} color="error">
-              <NotificationsIcon />
+              <NotificationsIcon sx={{ fontSize: 20 }} />
             </Badge>
           </IconButton>
 
-          {/* User Menu */}
-          <Box display="flex" alignItems="center" gap={2}>
-            {userProfile && (
-              <Box sx={{ display: { xs: 'none', md: 'block' }, textAlign: 'right' }}>
-                <Typography variant="body2" fontWeight="600">
-                  {userProfile.full_name}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {userProfile.email}
-                </Typography>
-              </Box>
-            )}
-            
-            <IconButton
-              onClick={handleMenuOpen}
+          {/* User Avatar */}
+          <IconButton
+            onClick={handleMenuOpen}
+            sx={{
+              p: 0,
+              '&:hover': {
+                transform: 'none'
+              }
+            }}
+          >
+            <Avatar
+              src={userProfile?.photo_url}
               sx={{
-                p: 0,
-                border: 2,
-                borderColor: alpha(theme.palette.primary.main, 0.2),
-                '&:hover': {
-                  borderColor: theme.palette.primary.main
-                }
+                width: 32,
+                height: 32,
+                bgcolor: theme.palette.grey[900],
+                fontSize: '0.875rem',
+                fontWeight: 500
               }}
             >
-              <Avatar
-                src={userProfile?.photo_url}
-                sx={{
-                  width: 40,
-                  height: 40,
-                  bgcolor: theme.palette.primary.main
-                }}
-              >
-                {userProfile?.full_name?.charAt(0) || <PersonIcon />}
-              </Avatar>
-            </IconButton>
-          </Box>
+              {userProfile?.full_name?.split(' ').map(n => n[0]).join('') || 'CP'}
+            </Avatar>
+          </IconButton>
         </Box>
 
         {/* User Menu Dropdown */}
@@ -241,12 +241,15 @@ const Header: React.FC<HeaderProps> = ({ title = 'Core Pilot' }) => {
               borderRadius: 3,
               minWidth: 280,
               mt: 1,
+              border: 1,
+              borderColor: 'grey.200',
               '& .MuiMenuItem-root': {
                 borderRadius: 1,
                 mx: 1,
                 my: 0.5,
                 px: 2,
-                py: 1.5
+                py: 1.5,
+                fontSize: '0.875rem'
               }
             }
           }}
@@ -259,15 +262,21 @@ const Header: React.FC<HeaderProps> = ({ title = 'Core Pilot' }) => {
               <Box display="flex" alignItems="center" gap={2} mb={1}>
                 <Avatar
                   src={userProfile.photo_url}
-                  sx={{ width: 48, height: 48, bgcolor: theme.palette.primary.main }}
+                  sx={{ 
+                    width: 48, 
+                    height: 48, 
+                    bgcolor: theme.palette.grey[900],
+                    fontSize: '1rem',
+                    fontWeight: 500
+                  }}
                 >
-                  {userProfile.full_name?.charAt(0)}
+                  {userProfile.full_name?.split(' ').map(n => n[0]).join('')}
                 </Avatar>
                 <Box flex={1}>
-                  <Typography variant="body1" fontWeight="600">
+                  <Typography variant="body1" fontWeight="600" sx={{ fontSize: '0.875rem' }}>
                     {userProfile.full_name}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                     {userProfile.email}
                   </Typography>
                 </Box>
@@ -279,13 +288,25 @@ const Header: React.FC<HeaderProps> = ({ title = 'Core Pilot' }) => {
                   label={`${userProfile.courses_count || 0} Courses`}
                   size="small"
                   variant="outlined"
-                  sx={{ borderRadius: 2 }}
+                  sx={{ 
+                    borderRadius: 1, 
+                    fontSize: '0.6875rem',
+                    height: 24,
+                    borderColor: 'grey.300',
+                    color: 'grey.600'
+                  }}
                 />
                 <Chip
                   label={`${userProfile.assignments_count || 0} Assignments`}
                   size="small"
                   variant="outlined"
-                  sx={{ borderRadius: 2 }}
+                  sx={{ 
+                    borderRadius: 1, 
+                    fontSize: '0.6875rem',
+                    height: 24,
+                    borderColor: 'grey.300',
+                    color: 'grey.600'
+                  }}
                 />
               </Box>
             </Box>

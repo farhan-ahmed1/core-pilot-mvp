@@ -25,7 +25,17 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Fade,
-  Slide
+  Slide,
+  Breadcrumbs,
+  Link,
+  Stack,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  ListItemButton,
+  ListItemSecondaryAction
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -41,7 +51,12 @@ import {
   EventNote as CalendarIcon,
   Task as TaskIcon,
   RocketLaunch as RocketIcon,
-  Dashboard as DashboardIcon
+  Dashboard as DashboardIcon,
+  ChevronRight as ChevronRightIcon,
+  Home as HomeIcon,
+  FilterList as FilterIcon,
+  Assignment as AssignmentIcon,
+  ArrowForward as ArrowForwardIcon
 } from '@mui/icons-material';
 import { alpha, useTheme } from '@mui/material/styles';
 
@@ -384,256 +399,335 @@ const AssignmentsListPage: React.FC = () => {
 
   return (
     <>
-      {/* Hero Section with Statistics */}
-      <Fade in timeout={800}>
-        <Paper
-          elevation={0}
-          sx={{
-            p: 4,
-            mb: 4,
-            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-            color: 'white',
-            borderRadius: 4,
-            position: 'relative',
-            overflow: 'hidden'
-          }}
-        >
-          {/* Decorative background elements */}
-          <Box
+      {/* Enhanced Navigation Header */}
+      <Box sx={{ mb: 4 }}>
+        {/* Breadcrumb Navigation */}
+        <Box sx={{ mb: 2 }}>
+          <Breadcrumbs
+            separator={<ChevronRightIcon fontSize="small" />}
+            aria-label="breadcrumb"
             sx={{
-              position: 'absolute',
-              top: -50,
-              right: -50,
-              width: 200,
-              height: 200,
-              borderRadius: '50%',
-              bgcolor: alpha('#fff', 0.1),
-              zIndex: 0
+              '& .MuiBreadcrumbs-separator': {
+                color: 'text.secondary',
+                mx: 1
+              }
             }}
-          />
-          
-          <Box sx={{ position: 'relative', zIndex: 1 }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-              <Box>
-                <Typography variant="h3" component="h1" fontWeight="800" gutterBottom>
-                  Assignment Center
-                </Typography>
-                <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 400 }}>
-                  Manage and track all your assignments in one place
-                </Typography>
-              </Box>
-              <Avatar
-                sx={{
-                  width: 80,
-                  height: 80,
-                  bgcolor: alpha('#fff', 0.15),
-                  border: `3px solid ${alpha('#fff', 0.3)}`
-                }}
-              >
-                <RocketIcon sx={{ fontSize: 40 }} />
-              </Avatar>
-            </Box>
-
-            {/* Statistics Grid */}
-            {!statsLoading && stats && (
-              <Grid container spacing={3}>
-                <Grid size={{xs: 12, sm: 6, md: 3}}>
-                  <Card sx={{ 
-                    bgcolor: alpha('#fff', 0.15), 
-                    backdropFilter: 'blur(10px)',
-                    borderRadius: 3,
-                    border: `1px solid ${alpha('#fff', 0.2)}`
-                  }}>
-                    <CardContent sx={{ textAlign: 'center', color: 'white', p: 3 }}>
-                      <TaskIcon sx={{ fontSize: 40, mb: 1 }} />
-                      <Typography variant="h3" fontWeight="800">{stats.total_assignments}</Typography>
-                      <Typography variant="body1" fontWeight={600}>Total Assignments</Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-                <Grid size={{xs: 12, sm: 6, md: 3}}>
-                  <Card sx={{ 
-                    bgcolor: alpha('#fff', 0.15), 
-                    backdropFilter: 'blur(10px)',
-                    borderRadius: 3,
-                    border: `1px solid ${alpha('#fff', 0.2)}`
-                  }}>
-                    <CardContent sx={{ textAlign: 'center', color: 'white', p: 3 }}>
-                      <WarningIcon sx={{ fontSize: 40, mb: 1 }} />
-                      <Typography variant="h3" fontWeight="800">{stats.overdue}</Typography>
-                      <Typography variant="body1" fontWeight={600}>Overdue</Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-                <Grid size={{xs: 12, sm: 6, md: 3}}>
-                  <Card sx={{ 
-                    bgcolor: alpha('#fff', 0.15), 
-                    backdropFilter: 'blur(10px)',
-                    borderRadius: 3,
-                    border: `1px solid ${alpha('#fff', 0.2)}`
-                  }}>
-                    <CardContent sx={{ textAlign: 'center', color: 'white', p: 3 }}>
-                      <AccessTimeIcon sx={{ fontSize: 40, mb: 1 }} />
-                      <Typography variant="h3" fontWeight="800">{stats.due_soon}</Typography>
-                      <Typography variant="body1" fontWeight={600}>Due Soon</Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-                <Grid size={{xs: 12, sm: 6, md: 3}}>
-                  <Card sx={{ 
-                    bgcolor: alpha('#fff', 0.15), 
-                    backdropFilter: 'blur(10px)',
-                    borderRadius: 3,
-                    border: `1px solid ${alpha('#fff', 0.2)}`
-                  }}>
-                    <CardContent sx={{ textAlign: 'center', color: 'white', p: 3 }}>
-                      <TrendingUpIcon sx={{ fontSize: 40, mb: 1 }} />
-                      <Typography variant="h3" fontWeight="800">{stats.upcoming}</Typography>
-                      <Typography variant="body1" fontWeight={600}>Upcoming</Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              </Grid>
-            )}
-          </Box>
-        </Paper>
-      </Fade>
-
-      {/* Filters and Controls */}
-      <Card elevation={2} sx={{ mb: 4, borderRadius: 3 }}>
-        <CardContent sx={{ p: 3 }}>
-          {/* Tabs for filtering by status */}
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-            <Tabs
-              value={activeTab}
-              onChange={handleTabChange}
-              aria-label="assignment status tabs"
-              variant="scrollable"
-              scrollButtons="auto"
+          >
+            <Link
+              component="button"
+              variant="body2"
+              onClick={() => navigate('/dashboard')}
               sx={{
-                '& .MuiTab-root': {
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  borderRadius: 2,
-                  minHeight: 48
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                color: 'text.secondary',
+                textDecoration: 'none',
+                '&:hover': {
+                  color: 'primary.main',
+                  textDecoration: 'underline'
                 }
               }}
             >
-              <Tab 
-                label="All Assignments" 
-                icon={<Badge badgeContent={stats?.total_assignments} color="primary" />}
-                iconPosition="end"
-              />
-              <Tab 
-                label="Overdue" 
-                icon={<Badge badgeContent={stats?.overdue} color="error" />}
-                iconPosition="end"
-              />
-              <Tab 
-                label="Due Soon" 
-                icon={<Badge badgeContent={stats?.due_soon} color="warning" />}
-                iconPosition="end"
-              />
-              <Tab 
-                label="Upcoming" 
-                icon={<Badge badgeContent={stats?.upcoming} color="success" />}
-                iconPosition="end"
-              />
-            </Tabs>
+              <HomeIcon sx={{ fontSize: 16 }} />
+              Dashboard
+            </Link>
+            <Typography variant="body2" color="text.primary" fontWeight={500}>
+              Assignments
+            </Typography>
+          </Breadcrumbs>
+        </Box>
+
+        {/* Page Header */}
+        <Box display="flex" alignItems="flex-start" justifyContent="space-between" gap={3}>
+          <Box flex={1}>
+            <Typography variant="overline" color="text.secondary" fontWeight={600} letterSpacing={1}>
+              Academic Dashboard
+            </Typography>
+            <Typography variant="h4" fontWeight="700" color="text.primary" sx={{ lineHeight: 1.2, mb: 2 }}>
+              Assignment Center
+            </Typography>
+            <Typography variant="h6" color="text.secondary" fontWeight={400}>
+              Manage and track all your assignments in one place
+            </Typography>
           </Box>
 
-          {/* Search and Filter Controls */}
-          <Grid container spacing={3} alignItems="center">
-            <Grid size={{xs: 12, md: 4}}>
+          {/* Action Controls */}
+          <Box display="flex" alignItems="center" gap={2}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleCreateAssignment}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 700,
+                borderRadius: 2,
+                px: 3,
+                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`
+              }}
+            >
+              Create Assignment
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Enhanced Filters and Controls */}
+      <Paper
+        elevation={0}
+        sx={{
+          mb: 4,
+          border: 1,
+          borderColor: 'grey.200',
+          borderRadius: 3,
+          overflow: 'hidden'
+        }}
+      >
+        {/* Status Filter Tabs */}
+        <Box sx={{ px: 3, py: 2, bgcolor: 'grey.50', borderBottom: 1, borderColor: 'grey.200' }}>
+          <Tabs
+            value={activeTab}
+            onChange={handleTabChange}
+            aria-label="assignment status tabs"
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{
+              minHeight: 40,
+              '& .MuiTab-root': {
+                textTransform: 'none',
+                fontWeight: 600,
+                borderRadius: 2,
+                minHeight: 40,
+                py: 1,
+                px: 2,
+                mr: 1,
+                fontSize: '0.875rem'
+              },
+              '& .MuiTabs-indicator': {
+                display: 'none'
+              },
+              '& .Mui-selected': {
+                bgcolor: 'white',
+                boxShadow: theme.shadows[1]
+              }
+            }}
+          >
+            <Tab 
+              label={
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Typography variant="body2" fontWeight={600} fontSize="0.875rem">
+                    All Assignments
+                  </Typography>
+                  {stats && (
+                    <Chip
+                      label={stats.total_assignments}
+                      size="small"
+                      sx={{
+                        height: 18,
+                        fontSize: '0.7rem',
+                        fontWeight: 600,
+                        bgcolor: activeTab === 0 ? 'primary.main' : 'grey.300',
+                        color: activeTab === 0 ? 'white' : 'text.secondary',
+                        '& .MuiChip-label': {
+                          px: 0.75,
+                          py: 0
+                        }
+                      }}
+                    />
+                  )}
+                </Box>
+              }
+            />
+            <Tab 
+              label={
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Typography variant="body2" fontWeight={600} fontSize="0.875rem">
+                    Overdue
+                  </Typography>
+                  {stats && stats.overdue > 0 && (
+                    <Chip
+                      label={stats.overdue}
+                      size="small"
+                      sx={{
+                        height: 18,
+                        fontSize: '0.7rem',
+                        fontWeight: 600,
+                        bgcolor: activeTab === 1 ? 'white' : 'error.main',
+                        color: activeTab === 1 ? 'error.main' : 'white',
+                        '& .MuiChip-label': {
+                          px: 0.75,
+                          py: 0
+                        }
+                      }}
+                    />
+                  )}
+                </Box>
+              }
+            />
+            <Tab 
+              label={
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Typography variant="body2" fontWeight={600} fontSize="0.875rem">
+                    Due Soon
+                  </Typography>
+                  {stats && stats.due_soon > 0 && (
+                    <Chip
+                      label={stats.due_soon}
+                      size="small"
+                      sx={{
+                        height: 18,
+                        fontSize: '0.7rem',
+                        fontWeight: 600,
+                        bgcolor: activeTab === 2 ? 'white' : 'warning.main',
+                        color: activeTab === 2 ? 'warning.main' : 'white',
+                        '& .MuiChip-label': {
+                          px: 0.75,
+                          py: 0
+                        }
+                      }}
+                    />
+                  )}
+                </Box>
+              }
+            />
+            <Tab 
+              label={
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Typography variant="body2" fontWeight={600} fontSize="0.875rem">
+                    Upcoming
+                  </Typography>
+                  {stats && (
+                    <Chip
+                      label={stats.upcoming}
+                      size="small"
+                      sx={{
+                        height: 18,
+                        fontSize: '0.7rem',
+                        fontWeight: 600,
+                        bgcolor: activeTab === 3 ? 'white' : 'success.main',
+                        color: activeTab === 3 ? 'success.main' : 'white',
+                        '& .MuiChip-label': {
+                          px: 0.75,
+                          py: 0
+                        }
+                      }}
+                    />
+                  )}
+                </Box>
+              }
+            />
+          </Tabs>
+        </Box>
+
+        {/* Search and Filter Controls */}
+        <Box sx={{ p: 3 }}>
+          <Grid container spacing={2} alignItems="center">
+            <Grid size={{xs: 12, md: 5}}>
               <TextField
                 fullWidth
-                placeholder="Search assignments..."
+                placeholder="Search assignments by title..."
                 value={searchQuery}
                 onChange={handleSearchChange}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <SearchIcon />
+                      <SearchIcon sx={{ color: 'grey.400' }} />
                     </InputAdornment>
                   ),
                   endAdornment: searchQuery && (
                     <InputAdornment position="end">
                       <IconButton size="small" onClick={() => setSearchQuery('')}>
-                        ×
+                        <Typography sx={{ fontSize: '1.2rem', fontWeight: 'bold' }}>×</Typography>
                       </IconButton>
                     </InputAdornment>
                   )
                 }}
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    bgcolor: 'grey.50',
+                    '&:hover': {
+                      bgcolor: 'grey.100'
+                    },
+                    '&.Mui-focused': {
+                      bgcolor: 'white'
+                    }
+                  }
+                }}
               />
             </Grid>
 
             <Grid size={{xs: 12, md: 3}}>
               <FormControl fullWidth>
-                <InputLabel>Filter by Course</InputLabel>
+                <InputLabel>Course</InputLabel>
                 <Select
                   value={selectedCourse}
                   onChange={(e) => handleCourseFilter(e.target.value as number | '')}
-                  label="Filter by Course"
-                  sx={{ borderRadius: 3 }}
+                  label="Course"
+                  sx={{
+                    borderRadius: 2,
+                    bgcolor: 'grey.50',
+                    '&:hover': {
+                      bgcolor: 'grey.100'
+                    },
+                    '&.Mui-focused': {
+                      bgcolor: 'white'
+                    }
+                  }}
                 >
                   <MenuItem value="">All Courses</MenuItem>
                   {courses.map((course) => (
                     <MenuItem key={course.id} value={course.id}>
-                      {course.name}
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <SchoolIcon sx={{ fontSize: 16, color: 'grey.500' }} />
+                        {course.name}
+                      </Box>
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
             </Grid>
 
-            <Grid size={{xs: 12, md: 3}}>
+            <Grid size={{xs: 12, md: 2}}>
               <FormControl fullWidth>
-                <InputLabel>Sort By</InputLabel>
+                <InputLabel>Sort</InputLabel>
                 <Select
                   value={filters.sort_by}
                   onChange={(e) => handleSortChange(e.target.value)}
-                  label="Sort By"
-                  sx={{ borderRadius: 3 }}
+                  label="Sort"
+                  sx={{
+                    borderRadius: 2,
+                    bgcolor: 'grey.50'
+                  }}
                 >
                   <MenuItem value="due_date">Due Date</MenuItem>
                   <MenuItem value="title">Title</MenuItem>
-                  <MenuItem value="created_at">Created Date</MenuItem>
+                  <MenuItem value="created_at">Created</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
 
             <Grid size={{xs: 12, md: 2}}>
-              <Box display="flex" gap={1}>
+              <Box display="flex" gap={1} justifyContent="flex-end">
                 <Button
                   variant="outlined"
                   onClick={handleOrderChange}
                   startIcon={<SortIcon />}
-                  sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 600 }}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    minWidth: 120
+                  }}
                 >
                   {filters.order === 'asc' ? 'Ascending' : 'Descending'}
                 </Button>
-                
-                <ToggleButtonGroup
-                  value={viewMode}
-                  exclusive
-                  onChange={handleViewModeChange}
-                  aria-label="view mode"
-                  size="small"
-                >
-                  <ToggleButton value="grid" aria-label="grid view">
-                    <GridViewIcon />
-                  </ToggleButton>
-                  <ToggleButton value="list" aria-label="list view">
-                    <ListViewIcon />
-                  </ToggleButton>
-                </ToggleButtonGroup>
               </Box>
             </Grid>
           </Grid>
-        </CardContent>
-      </Card>
+        </Box>
+      </Paper>
 
       {/* Assignments Content */}
       <TabPanel value={activeTab} index={activeTab}>
@@ -643,21 +737,31 @@ const AssignmentsListPage: React.FC = () => {
             sx={{
               p: 8,
               textAlign: 'center',
-              bgcolor: 'background.paper',
-              borderRadius: 4,
-              border: 2,
-              borderColor: 'divider',
-              borderStyle: 'dashed'
+              border: 1,
+              borderColor: 'grey.200',
+              borderRadius: 3,
+              bgcolor: 'grey.50'
             }}
           >
-            <DashboardIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
-            <Typography variant="h5" gutterBottom fontWeight="bold">
+            <Avatar
+              sx={{
+                width: 80,
+                height: 80,
+                mx: 'auto',
+                mb: 3,
+                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                border: `3px solid ${alpha(theme.palette.primary.main, 0.2)}`
+              }}
+            >
+              <AssignmentIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+            </Avatar>
+            <Typography variant="h5" gutterBottom fontWeight="700">
               No assignments found
             </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 400, mx: 'auto' }}>
               {activeTab === 0 
-                ? 'Create your first assignment to get started'
-                : 'No assignments match the current filter criteria'
+                ? 'Create your first assignment to get started with organizing your academic work'
+                : 'No assignments match the current filter criteria. Try adjusting your filters or create a new assignment.'
               }
             </Typography>
             <Button
@@ -666,24 +770,170 @@ const AssignmentsListPage: React.FC = () => {
               onClick={handleCreateAssignment}
               size="large"
               sx={{ 
-                borderRadius: 3, 
+                borderRadius: 2, 
                 textTransform: 'none', 
                 fontWeight: 700,
                 px: 4,
-                py: 1.5 
+                py: 1.5,
+                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`
               }}
             >
               Create Assignment
             </Button>
           </Paper>
         ) : (
-          <Grid container spacing={3}>
-            {filteredAssignments.map((assignment, index) => (
-              <Grid key={assignment.id} size={{xs:12, sm:6, lg:4}} >
-                {renderAssignmentCard(assignment, index)}
-              </Grid>
-            ))}
-          </Grid>
+          <Paper
+            elevation={0}
+            sx={{
+              border: 1,
+              borderColor: 'grey.200',
+              borderRadius: 3,
+              overflow: 'hidden'
+            }}
+          >
+            <List disablePadding>
+              {filteredAssignments.map((assignment, index) => {
+                const status = getDueDateStatus(assignment);
+                const statusColor = getDueDateColor(status);
+                const course = getCourseById(assignment.course_id);
+
+                return (
+                  <React.Fragment key={assignment.id}>
+                    <Fade in timeout={100 + (index * 50)}>
+                      <ListItem
+                        disablePadding
+                        sx={{
+                          borderLeft: 4,
+                          borderLeftColor: assignment.is_overdue 
+                            ? 'error.main' 
+                            : status === 'due-soon' 
+                              ? 'warning.main' 
+                              : 'transparent',
+                          bgcolor: assignment.is_overdue 
+                            ? alpha(theme.palette.error.main, 0.02)
+                            : status === 'due-soon'
+                              ? alpha(theme.palette.warning.main, 0.02)
+                              : 'transparent'
+                        }}
+                      >
+                        <ListItemButton
+                          onClick={() => handleAssignmentClick(assignment.id)}
+                          sx={{
+                            py: 2,
+                            px: 3,
+                            '&:hover': {
+                              bgcolor: 'grey.50'
+                            }
+                          }}
+                        >
+                          <ListItemIcon sx={{ minWidth: 48 }}>
+                            <Avatar
+                              sx={{
+                                width: 40,
+                                height: 40,
+                                bgcolor: assignment.is_overdue 
+                                  ? 'error.50' 
+                                  : status === 'due-soon' 
+                                    ? 'warning.50' 
+                                    : 'primary.50'
+                              }}
+                            >
+                              <AssignmentIcon 
+                                sx={{ 
+                                  fontSize: 20,
+                                  color: assignment.is_overdue 
+                                    ? 'error.600' 
+                                    : status === 'due-soon' 
+                                      ? 'warning.600' 
+                                      : 'primary.600'
+                                }} 
+                              />
+                            </Avatar>
+                          </ListItemIcon>
+                          
+                          <ListItemText
+                            primary={
+                              <Box display="flex" alignItems="center" gap={2} mb={0.5}>
+                                <Typography variant="h6" fontWeight="600" sx={{ flex: 1 }}>
+                                  {assignment.title}
+                                </Typography>
+                                <Chip
+                                  label={status === 'overdue' ? 'Overdue' : status === 'due-soon' ? 'Due Soon' : 'Upcoming'}
+                                  color={statusColor}
+                                  size="small"
+                                  variant="filled"
+                                  sx={{ fontWeight: 600 }}
+                                />
+                              </Box>
+                            }
+                            secondary={
+                              <Box>
+                                <Box display="flex" alignItems="center" gap={2} mb={1}>
+                                  <Box display="flex" alignItems="center" gap={0.5}>
+                                    <SchoolIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
+                                    <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                                      {course?.name || 'Unknown Course'}
+                                    </Typography>
+                                  </Box>
+                                  <Box display="flex" alignItems="center" gap={0.5}>
+                                    <CalendarIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
+                                    <Typography variant="body2" color="text.secondary">
+                                      {formatDueDate(assignment.due_date)}
+                                    </Typography>
+                                  </Box>
+                                </Box>
+                                
+                                {assignment.days_until_due !== undefined && (
+                                  <Typography
+                                    variant="caption"
+                                    sx={{
+                                      px: 1,
+                                      py: 0.25,
+                                      borderRadius: 1,
+                                      bgcolor: assignment.is_overdue 
+                                        ? alpha(theme.palette.error.main, 0.1)
+                                        : alpha(theme.palette.primary.main, 0.1),
+                                      color: assignment.is_overdue ? 'error.main' : 'text.secondary',
+                                      fontWeight: 600
+                                    }}
+                                  >
+                                    {assignment.is_overdue 
+                                      ? `${Math.abs(assignment.days_until_due)} days overdue`
+                                      : assignment.days_until_due === 0 
+                                        ? 'Due today'
+                                        : `${assignment.days_until_due} days left`
+                                    }
+                                  </Typography>
+                                )}
+                              </Box>
+                            }
+                          />
+                          
+                          <ListItemSecondaryAction>
+                            <IconButton
+                              edge="end"
+                              sx={{
+                                opacity: 0.7,
+                                '&:hover': {
+                                  opacity: 1,
+                                  bgcolor: 'grey.100'
+                                }
+                              }}
+                            >
+                              <ArrowForwardIcon sx={{ fontSize: 20 }} />
+                            </IconButton>
+                          </ListItemSecondaryAction>
+                        </ListItemButton>
+                      </ListItem>
+                    </Fade>
+                    {index < filteredAssignments.length - 1 && (
+                      <Divider variant="inset" component="li" sx={{ ml: 11 }} />
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </List>
+          </Paper>
         )}
       </TabPanel>
 

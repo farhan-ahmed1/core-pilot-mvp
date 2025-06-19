@@ -21,7 +21,10 @@ import {
   Paper,
   Grid,
   Stack,
-  Avatar
+  Avatar,
+  Breadcrumbs,
+  Link,
+  CircularProgress
 } from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
@@ -37,7 +40,9 @@ import {
   School as SchoolIcon,
   AutoStories as BookIcon,
   Timeline as ProgressIcon,
-  Insights as AnalyticsIcon
+  Insights as AnalyticsIcon,
+  ChevronRight as ChevronRightIcon,
+  Home as HomeIcon
 } from '@mui/icons-material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
@@ -253,232 +258,239 @@ const AssignmentPage: React.FC = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      {/* Header with navigation and actions */}
-      <Paper
-        elevation={0}
-        sx={{
-          p: 4,
-          mb: 4,
-          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-          color: 'white',
-          borderRadius: 4,
-          position: 'relative',
-          overflow: 'hidden'
-        }}
-      >
-        {/* Decorative background elements */}
-        <Box
-          sx={{
-            position: 'absolute',
-            top: -30,
-            right: -30,
-            width: 120,
-            height: 120,
-            borderRadius: '50%',
-            bgcolor: alpha('#fff', 0.1),
-            zIndex: 0
-          }}
-        />
-        
-        <Box sx={{ position: 'relative', zIndex: 1 }}>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-            <Box display="flex" alignItems="center">
-              <IconButton 
-                onClick={handleBack} 
-                sx={{ 
-                  mr: 2, 
-                  color: 'white',
-                  bgcolor: alpha('#fff', 0.1),
-                  '&:hover': { bgcolor: alpha('#fff', 0.2) }
+      {/* Enhanced Navigation Header */}
+      <Box sx={{ mb: 3 }}>
+        {/* Breadcrumb Navigation */}
+        <Box sx={{ mb: 2 }}>
+          <Breadcrumbs
+            separator={<ChevronRightIcon fontSize="small" />}
+            aria-label="breadcrumb"
+            sx={{
+              '& .MuiBreadcrumbs-separator': {
+                color: 'text.secondary',
+                mx: 1
+              }
+            }}
+          >
+            <Link
+              component="button"
+              variant="body2"
+              onClick={() => navigate('/dashboard')}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                color: 'text.secondary',
+                textDecoration: 'none',
+                '&:hover': {
+                  color: 'primary.main',
+                  textDecoration: 'underline'
+                }
+              }}
+            >
+              <HomeIcon sx={{ fontSize: 16 }} />
+              Dashboard
+            </Link>
+            <Link
+              component="button"
+              variant="body2"
+              onClick={() => navigate('/assignments')}
+              sx={{
+                color: 'text.secondary',
+                textDecoration: 'none',
+                '&:hover': {
+                  color: 'primary.main',
+                  textDecoration: 'underline'
+                }
+              }}
+            >
+              Assignments
+            </Link>
+            <Typography variant="body2" color="text.primary" fontWeight={500}>
+              {assignment.title}
+            </Typography>
+          </Breadcrumbs>
+        </Box>
+
+        {/* Page Header */}
+        <Box display="flex" alignItems="flex-start" justifyContent="space-between" gap={3}>
+          <Box flex={1}>
+            <Box display="flex" alignItems="center" gap={2} mb={2}>
+              <IconButton
+                onClick={handleBack}
+                size="small"
+                sx={{
+                  bgcolor: 'grey.100',
+                  '&:hover': {
+                    bgcolor: 'grey.200'
+                  }
                 }}
               >
-                <ArrowBackIcon />
+                <ArrowBackIcon fontSize="small" />
               </IconButton>
               <Box>
-                <Typography variant="h4" component="h1" fontWeight="800" gutterBottom>
-                  {assignment.title}
+                <Typography variant="overline" color="text.secondary" fontWeight={600} letterSpacing={1}>
+                  {course.name} • {course.term}
                 </Typography>
-                <Box display="flex" alignItems="center" gap={2}>
-                  <Chip
-                    icon={<SchoolIcon />}
-                    label={`${course.name} • ${course.term}`}
-                    sx={{
-                      bgcolor: alpha('#fff', 0.15),
-                      color: 'white',
-                      fontWeight: 600,
-                      '& .MuiChip-icon': { color: 'white' }
-                    }}
-                  />
-                  <Chip
-                    label={dueDateStatus === 'overdue' ? 'Overdue' : dueDateStatus === 'due-soon' ? 'Due Soon' : 'Upcoming'}
-                    color={dueDateColor}
-                    icon={<ScheduleIcon />}
-                    variant="filled"
-                    sx={{ fontWeight: 600 }}
-                  />
-                </Box>
-              </Box>
-            </Box>
-            
-            <Box display="flex" alignItems="center" gap={2}>
-              {!editMode && (
-                <IconButton 
-                  onClick={handleMenuOpen}
-                  sx={{ 
-                    color: 'white',
-                    bgcolor: alpha('#fff', 0.1),
-                    '&:hover': { bgcolor: alpha('#fff', 0.2) }
-                  }}
-                >
-                  <MoreVertIcon />
-                </IconButton>
-              )}
-              
-              {editMode && (
-                <Stack direction="row" spacing={1}>
-                  <Button
-                    variant="outlined"
-                    startIcon={<CancelIcon />}
-                    onClick={handleCancelEdit}
-                    disabled={saving}
-                    sx={{
-                      color: 'white',
-                      borderColor: alpha('#fff', 0.3),
-                      '&:hover': {
-                        borderColor: 'white',
-                        bgcolor: alpha('#fff', 0.1)
-                      }
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="contained"
-                    startIcon={<SaveIcon />}
-                    onClick={handleSaveEdit}
-                    disabled={saving}
-                    sx={{
-                      bgcolor: 'white',
-                      color: theme.palette.primary.main,
-                      '&:hover': {
-                        bgcolor: alpha('#fff', 0.9)
-                      }
-                    }}
-                  >
-                    {saving ? 'Saving...' : 'Save Changes'}
-                  </Button>
-                </Stack>
-              )}
-            </Box>
-          </Box>
-        </Box>
-      </Paper>
-
-      <Grid container spacing={3}>
-        {/* Main content */}
-        <Grid size={{xs:12, md:8}}>
-          <Card elevation={3} sx={{ mb: 3, borderRadius: 3 }}>
-            <CardContent sx={{ p: 4 }}>
-              {/* Due Date */}
-              <Box display="flex" alignItems="center" mb={3}>
-                <Avatar sx={{ 
-                  mr: 2, 
-                  bgcolor: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
-                  width: 48,
-                  height: 48
-                }}>
-                  <CalendarIcon />
-                </Avatar>
-                <Box>
-                  <Typography variant="subtitle2" color="text.secondary" fontWeight={600}>
-                    Due Date
-                  </Typography>
-                  {editMode ? (
-                    <DateTimePicker
-                      value={new Date(editForm.due_date)}
-                      onChange={(date) => setEditForm({ ...editForm, due_date: date?.toISOString() || '' })}
-                      sx={{ mt: 1 }}
-                    />
-                  ) : (
-                    <Typography variant="h6" fontWeight="700">
-                      {formatDueDate(assignment.due_date)}
-                    </Typography>
-                  )}
-                </Box>
-              </Box>
-
-              <Divider sx={{ my: 3 }} />
-
-              {/* Title */}
-              <Box display="flex" alignItems="center" mb={3}>
-                <Avatar sx={{ 
-                  mr: 2, 
-                  bgcolor: `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.secondary.light})`,
-                  width: 48,
-                  height: 48
-                }}>
-                  <AssignmentIcon />
-                </Avatar>
-                <Box flex={1}>
-                  <Typography variant="subtitle2" color="text.secondary" fontWeight={600}>
-                    Assignment Title
-                  </Typography>
+                <Typography variant="h4" fontWeight="700" color="text.primary" sx={{ lineHeight: 1.2 }}>
                   {editMode ? (
                     <TextField
                       value={editForm.title}
                       onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                      variant="standard"
+                      sx={{
+                        '& .MuiInput-input': {
+                          fontSize: '2.125rem',
+                          fontWeight: 700,
+                          p: 0
+                        },
+                        '& .MuiInput-underline:before': {
+                          borderBottomColor: 'divider'
+                        }
+                      }}
                       fullWidth
-                      variant="outlined"
-                      sx={{ mt: 1 }}
+                      autoFocus
                     />
                   ) : (
-                    <Typography variant="h5" fontWeight="700">
-                      {assignment.title}
-                    </Typography>
+                    assignment.title
                   )}
-                </Box>
+                </Typography>
               </Box>
-
-              <Divider sx={{ my: 3 }} />
-
-              {/* Description */}
-              <Box display="flex" alignItems="flex-start" mb={3}>
-                <Avatar sx={{ 
-                  mr: 2, 
-                  bgcolor: `linear-gradient(135deg, ${theme.palette.info.main}, ${theme.palette.info.light})`,
-                  width: 48,
-                  height: 48
-                }}>
-                  <DescriptionIcon />
-                </Avatar>
-                <Box flex={1}>
-                  <Typography variant="subtitle2" color="text.secondary" gutterBottom fontWeight={600}>
-                    Description
-                  </Typography>
-                  {editMode ? (
-                    <TextField
-                      value={editForm.description}
-                      onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                      fullWidth
-                      multiline
-                      rows={3}
-                      variant="outlined"
-                      placeholder="Assignment description..."
+            </Box>
+            
+            {/* Status and Due Date Row */}
+            <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
+              <Chip
+                label={dueDateStatus === 'overdue' ? 'Overdue' : dueDateStatus === 'due-soon' ? 'Due Soon' : 'Upcoming'}
+                color={dueDateColor}
+                variant="filled"
+                size="medium"
+                sx={{ fontWeight: 600 }}
+              />
+              <Box display="flex" alignItems="center" gap={1}>
+                <CalendarIcon fontSize="small" color="action" />
+                <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                  Due {editMode ? (
+                    <DateTimePicker
+                      value={new Date(editForm.due_date)}
+                      onChange={(date) => setEditForm({ ...editForm, due_date: date?.toISOString() || '' })}
+                      slotProps={{
+                        textField: {
+                          size: 'small',
+                          sx: { ml: 1, minWidth: 200 }
+                        }
+                      }}
                     />
                   ) : (
-                    <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-                      {assignment.description || 'No description provided.'}
-                    </Typography>
+                    formatDueDate(assignment.due_date)
                   )}
-                </Box>
+                </Typography>
               </Box>
+            </Box>
+          </Box>
 
-              <Divider sx={{ my: 3 }} />
+          {/* Action Controls */}
+          <Box display="flex" alignItems="center" gap={1}>
+            {editMode ? (
+              <Stack direction="row" spacing={1}>
+                <Button
+                  variant="outlined"
+                  startIcon={<CancelIcon />}
+                  onClick={handleCancelEdit}
+                  disabled={saving}
+                  sx={{
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    borderRadius: 2
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="contained"
+                  startIcon={saving ? <CircularProgress size={16} /> : <SaveIcon />}
+                  onClick={handleSaveEdit}
+                  disabled={saving}
+                  sx={{
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    borderRadius: 2,
+                    px: 3
+                  }}
+                >
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </Stack>
+            ) : (
+              <>
+                <Button
+                  variant="contained"
+                  startIcon={<ProgressIcon />}
+                  sx={{
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    borderRadius: 2,
+                    px: 3,
+                    background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`
+                  }}
+                >
+                  Start Working
+                </Button>
+                <IconButton
+                  onClick={handleMenuOpen}
+                  sx={{
+                    bgcolor: 'grey.100',
+                    '&:hover': {
+                      bgcolor: 'grey.200'
+                    }
+                  }}
+                >
+                  <MoreVertIcon />
+                </IconButton>
+              </>
+            )}
+          </Box>
+        </Box>
+      </Box>
 
-              {/* Prompt */}
+      <Grid container spacing={3}>
+        {/* Main content */}
+        <Grid size={{xs:12, md:8}}>
+          <Card elevation={0} sx={{ border: 1, borderColor: 'grey.200', borderRadius: 3 }}>
+            <CardContent sx={{ p: 4 }}>
+              {/* Description Section */}
+              {(assignment.description || editMode) && (
+                <>
+                  <Box mb={4}>
+                    <Typography variant="h6" fontWeight="700" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <DescriptionIcon sx={{ fontSize: 20 }} />
+                      Description
+                    </Typography>
+                    {editMode ? (
+                      <TextField
+                        value={editForm.description}
+                        onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                        fullWidth
+                        multiline
+                        rows={3}
+                        variant="outlined"
+                        placeholder="Assignment description..."
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                      />
+                    ) : (
+                      <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
+                        {assignment.description || 'No description provided.'}
+                      </Typography>
+                    )}
+                  </Box>
+                  <Divider sx={{ my: 3 }} />
+                </>
+              )}
+
+              {/* Instructions Section */}
               <Box>
-                <Typography variant="h6" gutterBottom fontWeight="700" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <BookIcon />
+                <Typography variant="h6" fontWeight="700" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <BookIcon sx={{ fontSize: 20 }} />
                   Assignment Instructions
                 </Typography>
                 {editMode ? (
@@ -487,12 +499,13 @@ const AssignmentPage: React.FC = () => {
                     onChange={(e) => setEditForm({ ...editForm, prompt: e.target.value })}
                     fullWidth
                     multiline
-                    rows={8}
+                    rows={12}
                     variant="outlined"
                     placeholder="Enter assignment instructions and requirements..."
                     sx={{
                       '& .MuiOutlinedInput-root': {
-                        borderRadius: 2
+                        borderRadius: 2,
+                        bgcolor: 'grey.50'
                       }
                     }}
                   />
@@ -501,10 +514,10 @@ const AssignmentPage: React.FC = () => {
                     elevation={0}
                     sx={{
                       p: 3,
-                      bgcolor: alpha(theme.palette.primary.main, 0.05),
+                      bgcolor: 'grey.50',
+                      borderRadius: 2,
                       border: 1,
-                      borderColor: alpha(theme.palette.primary.main, 0.2),
-                      borderRadius: 3
+                      borderColor: 'grey.200'
                     }}
                   >
                     <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>
@@ -519,69 +532,91 @@ const AssignmentPage: React.FC = () => {
 
         {/* Sidebar */}
         <Grid size={{xs:12, md:4}}>
-          <Card elevation={3} sx={{ borderRadius: 3 }}>
+          <Card elevation={0} sx={{ border: 1, borderColor: 'grey.200', borderRadius: 3 }}>
             <CardContent sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom fontWeight="700" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <AnalyticsIcon />
+              <Typography variant="h6" fontWeight="700" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <AnalyticsIcon sx={{ fontSize: 20 }} />
                 Assignment Details
               </Typography>
               
               <Stack spacing={3}>
                 <Box>
-                  <Typography variant="subtitle2" color="text.secondary" fontWeight={600}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase" letterSpacing={1}>
                     Course
                   </Typography>
-                  <Typography variant="body1" fontWeight="600">
+                  <Typography variant="body1" fontWeight={600}>
                     {course.name}
                   </Typography>
-                </Box>
-
-                <Box>
-                  <Typography variant="subtitle2" color="text.secondary" fontWeight={600}>
-                    Term
-                  </Typography>
-                  <Typography variant="body1" fontWeight="600">
+                  <Typography variant="body2" color="text.secondary">
                     {course.term}
                   </Typography>
                 </Box>
 
                 <Box>
-                  <Typography variant="subtitle2" color="text.secondary" fontWeight={600}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase" letterSpacing={1}>
                     Created
                   </Typography>
-                  <Typography variant="body1" fontWeight="600">
-                    {new Date(assignment.created_at).toLocaleDateString()}
+                  <Typography variant="body1" fontWeight={600}>
+                    {new Date(assignment.created_at).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
                   </Typography>
                 </Box>
 
                 {assignment.updated_at && (
                   <Box>
-                    <Typography variant="subtitle2" color="text.secondary" fontWeight={600}>
+                    <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase" letterSpacing={1}>
                       Last Updated
                     </Typography>
-                    <Typography variant="body1" fontWeight="600">
-                      {new Date(assignment.updated_at).toLocaleDateString()}
+                    <Typography variant="body1" fontWeight={600}>
+                      {new Date(assignment.updated_at).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}
                     </Typography>
                   </Box>
                 )}
 
                 <Divider />
 
-                <Button
-                  variant="contained"
-                  startIcon={<ProgressIcon />}
-                  fullWidth
-                  size="large"
-                  sx={{ 
-                    borderRadius: 3,
-                    py: 2,
-                    textTransform: 'none',
-                    fontWeight: 700,
-                    background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`
-                  }}
-                >
-                  Start Working
-                </Button>
+                {/* Quick Actions */}
+                <Box>
+                  <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase" letterSpacing={1} gutterBottom>
+                    Quick Actions
+                  </Typography>
+                  <Stack spacing={1}>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      sx={{
+                        textTransform: 'none',
+                        fontWeight: 500,
+                        borderRadius: 2,
+                        justifyContent: 'flex-start'
+                      }}
+                    >
+                      Generate AI Breakdown
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      sx={{
+                        textTransform: 'none',
+                        fontWeight: 500,
+                        borderRadius: 2,
+                        justifyContent: 'flex-start'
+                      }}
+                    >
+                      View Similar Assignments
+                    </Button>
+                  </Stack>
+                </Box>
               </Stack>
             </CardContent>
           </Card>
