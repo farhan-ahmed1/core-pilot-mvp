@@ -41,14 +41,16 @@ class Assignment(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, index=True)
-    description = Column(Text)
-    due_date = Column(DateTime)
-    course_id = Column(Integer, ForeignKey("courses.id"))
+    description = Column(Text, default="")
+    prompt = Column(Text, nullable=False)  # Added prompt field for FRE-2.2
+    due_date = Column(DateTime, nullable=False)
+    course_id = Column(Integer, ForeignKey("courses.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
     course = relationship("Course", back_populates="assignments")
+    drafts = relationship("Draft", cascade="all, delete-orphan")  # Added drafts relationship
 
 class Draft(Base):
     __tablename__ = "drafts"

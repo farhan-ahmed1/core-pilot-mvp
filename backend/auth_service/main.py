@@ -20,6 +20,10 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(courses_router)
 
+# Add assignments router for FRE-2.1, 2.2, 2.3
+from routers.assignments import router as assignments_router
+app.include_router(assignments_router)
+
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the FastAPI application!"}

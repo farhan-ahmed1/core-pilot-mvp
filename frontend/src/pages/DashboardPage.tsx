@@ -53,6 +53,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 
 // Import shared components
 import Header from '../components/Header';
+import AssignmentDialog from '../components/AssignmentDialog';
 
 // Import API functions with proper types
 import { 
@@ -64,6 +65,16 @@ import {
   CourseCreate,
   CourseUpdate 
 } from '../services/courseService';
+
+// Import assignment API functions
+import {
+  getAssignmentsByCourse,
+  getUpcomingAssignments,
+  AssignmentListItem,
+  formatDueDate,
+  getDueDateStatus,
+  getDueDateColor
+} from '../services/assignmentService';
 
 // Animation variants for Framer Motion-like effects
 const fadeInUp = {
@@ -99,6 +110,11 @@ const DashboardPage: React.FC = () => {
     message: '',
     severity: 'success'
   });
+
+  // Assignment dialog state
+  const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
+  const [selectedCourseForAssignment, setSelectedCourseForAssignment] = useState<number | undefined>(undefined);
+  const [realAssignments, setRealAssignments] = useState<{ [courseId: number]: AssignmentListItem[] }>({});
 
   // Mock assignment data with better structure
   const [assignments] = useState<Assignment[]>([
@@ -169,7 +185,9 @@ const DashboardPage: React.FC = () => {
   };
 
   const handleNavigateToAssignment = (assignmentId: number) => {
-    navigate(`/assignments/${assignmentId}`);
+    navigate(`/assignments/${assignmentId}`, {
+      state: { from: '/dashboard' }
+    });
   };
 
   const handleOpenNewCourse = () => {
@@ -226,6 +244,27 @@ const DashboardPage: React.FC = () => {
     } catch (error: any) {
       setSnackbar({ open: true, message: error.message || 'Failed to delete course', severity: 'error' });
     }
+  };
+
+  // Assignment handlers
+  const handleOpenAssignmentDialog = (courseId?: number) => {
+    setSelectedCourseForAssignment(courseId);
+    setAssignmentDialogOpen(true);
+  };
+
+  const handleCloseAssignmentDialog = () => {
+    setAssignmentDialogOpen(false);
+    setSelectedCourseForAssignment(undefined);
+  };
+
+  const handleAssignmentCreated = (assignment: any) => {
+    setSnackbar({
+      open: true,
+      message: 'Assignment created successfully!',
+      severity: 'success'
+    });
+    // Refresh assignments for the course
+    // In a real app, you'd update the assignments state here
   };
 
   // Statistics calculations
@@ -511,6 +550,7 @@ const DashboardPage: React.FC = () => {
                           variant="outlined" 
                           startIcon={<AddIcon />} 
                           fullWidth
+                          onClick={() => handleOpenAssignmentDialog(course.id)}
                           sx={{ 
                             borderRadius: 2,
                             textTransform: 'none',
@@ -761,6 +801,14 @@ const DashboardPage: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Assignment Dialog */}
+      <AssignmentDialog 
+        open={assignmentDialogOpen} 
+        onClose={handleCloseAssignmentDialog}
+        preselectedCourseId={selectedCourseForAssignment}
+        onAssignmentCreated={handleAssignmentCreated}
+      />
 
       {/* Success/Error Snackbar */}
       <Snackbar
