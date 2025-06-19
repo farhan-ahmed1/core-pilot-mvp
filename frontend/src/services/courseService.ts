@@ -23,6 +23,17 @@ export interface CourseUpdate {
   description?: string;
 }
 
+export interface Assignment {
+  id: number;
+  title: string;
+  description?: string;
+  prompt: string;
+  due_date: string;
+  course_id: number;
+  created_at: string;
+  updated_at?: string;
+}
+
 // FRE-1.3: Get all courses for the authenticated user
 export async function getCourses(): Promise<Course[]> {
   try {
@@ -40,6 +51,16 @@ export async function getCourse(id: number): Promise<Course> {
   } catch (error) {
     handleApiError(error);
     throw error;
+  }
+}
+
+// FRE-2.1: Get assignments for a specific course
+export async function getCourseAssignments(courseId: number): Promise<Assignment[]> {
+  try {
+    return await apiRequest<Assignment[]>('GET', `/courses/${courseId}/assignments`);
+  } catch (error) {
+    handleApiError(error);
+    return [];
   }
 }
 

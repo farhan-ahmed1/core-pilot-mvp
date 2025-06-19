@@ -4,7 +4,9 @@ from sqlalchemy.orm import Session
 from typing import List
 from database.base import get_db
 from schemas.course import CourseCreate, CourseUpdate, CourseResponse
+from schemas.assignment import AssignmentListResponse  # Add this import
 from crud.course import get_courses, get_course_by_id, create_course, update_course, delete_course
+from crud.assignment import get_assignments_by_course  # Add this import
 from database.models import User
 from utils.auth_middleware import get_current_user
 import logging
@@ -162,4 +164,38 @@ def delete_existing_course(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete course"
+        )
+
+@router.get("/{course_id}/assignments", response_model=List[AssignmentListResponse])
+def list_course_assignments(
+    course_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get all assignments for a specific course - only if user owns the course (FRE-2.1)"""
+    try:
+        # First verify user owns this course
+        course = get_course_by_id(db, course_id)
+        if not course:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Course not found"
+            )
+        
+        if course.user_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Course not found or access denied"
+            )
+        
+        assignments = get_assignments_by_course(db, course_id)
+        logger.info(f"Retrieved {len(assignments)} assignments for course {course_id}")
+        return assignments
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error listing assignments for course {course_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve assignments"
         )

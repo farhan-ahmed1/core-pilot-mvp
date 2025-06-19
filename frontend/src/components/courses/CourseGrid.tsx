@@ -68,9 +68,11 @@ const CourseGrid: React.FC<CourseGridProps> = ({
   return (
     <Grid container spacing={3}>
       {courses.map((course, index) => (
-        <Grid 
-          key={course.id}
-          size={{ xs: 12, md: 6, lg: 4 }}
+        <Grid key={course.id}
+          size={{
+            xs:12,
+            md:6,
+            lg:4}}
         >
           <Fade in timeout={600 + index * 100}>
             <div>

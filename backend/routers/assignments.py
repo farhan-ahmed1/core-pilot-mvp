@@ -197,40 +197,6 @@ def list_all_assignments(
             detail="Failed to retrieve assignments"
         )
 
-@router.get("/courses/{course_id}/assignments", response_model=List[AssignmentListResponse])
-def list_assignments_for_course(
-    course_id: int, 
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Get all assignments for a specific course (FRE-2.1) - only if user owns the course"""
-    try:
-        logger.info(f"Retrieving assignments for course {course_id} by user {current_user.id}")
-        
-        # Verify user owns this course
-        course = db.query(Course).filter(
-            Course.id == course_id,
-            Course.user_id == current_user.id
-        ).first()
-        
-        if not course:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Course not found or access denied"
-            )
-        
-        assignments = get_assignments_by_course(db, course_id)
-        logger.info(f"Retrieved {len(assignments)} assignments for course {course_id}")
-        return assignments
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error listing assignments for course {course_id}: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve assignments"
-        )
-
 @router.post("/", response_model=AssignmentResponse, status_code=status.HTTP_201_CREATED)
 def create_new_assignment(
     assignment: AssignmentCreate, 

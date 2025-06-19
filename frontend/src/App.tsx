@@ -12,6 +12,8 @@ import MainLayout from './components/layout/MainLayout';
 
 // Import page components
 import DashboardPage from "./pages/dashboard/DashboardPage";
+import CoursesPage from "./pages/dashboard/CoursesPage";
+import CourseAssignmentsPage from "./pages/courses/CourseAssignmentsPage";
 import LoginPage from "./pages/auth/LoginPage";
 import AssignmentPage from "./pages/assignments/AssignmentPage";
 import AssignmentsListPage from "./pages/assignments/AssignmentsListPage";
@@ -36,6 +38,20 @@ function App() {
               <ProtectedRoute>
                 <MainLayout title="Core Pilot" maxWidth="xl">
                   <DashboardPage />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/courses" element={
+              <ProtectedRoute>
+                <MainLayout title="Core Pilot" maxWidth="xl">
+                  <CoursesPage />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/courses/:courseId/assignments" element={
+              <ProtectedRoute>
+                <MainLayout title="Core Pilot" maxWidth="xl">
+                  <CourseAssignmentsPage />
                 </MainLayout>
               </ProtectedRoute>
             } />

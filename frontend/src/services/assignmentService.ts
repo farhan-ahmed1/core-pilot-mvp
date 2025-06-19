@@ -41,7 +41,7 @@ export interface AssignmentListItem {
 // FRE-2.1: List assignments for a course
 export async function getAssignmentsByCourse(courseId: number): Promise<AssignmentListItem[]> {
   try {
-    return await apiRequest<AssignmentListItem[]>('GET', `/assignments/courses/${courseId}/assignments`);
+    return await apiRequest<AssignmentListItem[]>('GET', `/courses/${courseId}/assignments`);
   } catch (error) {
     handleApiError(error);
     return [];
