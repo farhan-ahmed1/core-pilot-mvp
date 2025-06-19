@@ -24,9 +24,7 @@ import {
   Description as DescriptionIcon,
   Close as CloseIcon,
   Save as SaveIcon,
-  NoteAdd as CreateIcon,
-  Add as AddIcon
-} from '@mui/icons-material';
+  NoteAdd as CreateIcon} from '@mui/icons-material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';

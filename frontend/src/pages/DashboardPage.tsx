@@ -11,14 +11,8 @@ import {
   Paper,
   Avatar,
   Chip,
-  LinearProgress,
-  IconButton,
-  Menu,
-  MenuItem,
   Fab,
   Zoom,
-  Alert,
-  Snackbar,
   Fade,
   alpha,
   useTheme
@@ -27,20 +21,14 @@ import {
   Add as AddIcon,
   School as SchoolIcon,
   Assignment as AssignmentIcon,
-  TrendingUp as TrendingUpIcon,
   Warning as WarningIcon,
   AccessTime as AccessTimeIcon,
   CheckCircle as CheckCircleIcon,
-  MoreVert as MoreVertIcon,
   RocketLaunch as RocketIcon,
-  Dashboard as DashboardIcon,
-  CalendarToday as CalendarIcon,
-  Insights as InsightsIcon
-} from '@mui/icons-material';
+  CalendarToday as CalendarIcon} from '@mui/icons-material';
 
 // Import services and components
 import { useAuth } from '../contexts/AuthContext';
-import { getCourses, Course } from '../services/courseService';
 import { 
   getAssignmentStats, 
   getUpcomingAssignments, 
@@ -50,7 +38,6 @@ import {
   getDueDateStatus,
   getDueDateColor
 } from '../services/assignmentService';
-import { getUserStats } from '../services/userService';
 import CourseGrid from '../components/CourseGrid';
 import CourseDialogs from '../components/CourseDialogs';
 import CourseActions from '../components/CourseActions';
@@ -76,7 +63,6 @@ const DashboardPage: React.FC = () => {
     loading: coursesLoading,
     createDialogOpen,
     editDialogOpen,
-    editingCourse,
     menuAnchorEl,
     snackbar,
     newCourseName,
@@ -87,7 +73,6 @@ const DashboardPage: React.FC = () => {
     editCourseTerm,
     editCourseDescription,
     editLoading,
-    handleCourseMenuOpen,
     handleCourseMenuClose,
     handleOpenCreateDialog,
     handleCreateCourse,

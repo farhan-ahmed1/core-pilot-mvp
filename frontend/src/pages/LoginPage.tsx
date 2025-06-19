@@ -11,7 +11,7 @@ import {
   CircularProgress,
   Fade
 } from '@mui/material';
-import { alpha, useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import { signIn, signUp } from '../services/authService';
 import { registerUserInBackend } from '../services/userService';
 import { useAuth } from '../contexts/AuthContext';

@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, Container, Fade } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
 import Header from './Header';
 
 interface MainLayoutProps {
@@ -22,7 +21,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   containerPadding = true,
   fullHeight = true
 }) => {
-  const theme = useTheme();
 
   return (
     <Box 

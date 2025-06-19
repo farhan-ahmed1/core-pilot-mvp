@@ -19,9 +19,7 @@ import {
   Tab,
   Switch,
   FormControlLabel,
-  FormGroup,
-  Skeleton
-} from '@mui/material';
+  FormGroup} from '@mui/material';
 import {
   Person as PersonIcon,
   Edit as EditIcon,

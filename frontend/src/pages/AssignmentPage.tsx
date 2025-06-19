@@ -20,7 +20,6 @@ import {
   Snackbar,
   Paper,
   Grid,
-  Skeleton,
   Stack,
   Avatar
 } from '@mui/material';

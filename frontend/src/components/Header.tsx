@@ -18,7 +18,6 @@ import {
 } from '@mui/material';
 import {
   Person as PersonIcon,
-  Settings as SettingsIcon,
   Logout as LogoutIcon,
   Dashboard as DashboardIcon,
   Assignment as AssignmentIcon,
