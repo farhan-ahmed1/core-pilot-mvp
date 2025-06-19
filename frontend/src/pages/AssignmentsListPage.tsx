@@ -34,15 +34,19 @@ import {
   Sort as SortIcon,
   ViewList as ListViewIcon,
   ViewModule as GridViewIcon,
-  Assignment as AssignmentIcon,
+  LibraryBooks as AssignmentIcon,
   Warning as WarningIcon,
   CheckCircle as CheckCircleIcon,
   Add as AddIcon,
-  School as SchoolIcon,
+  AutoStories as SchoolIcon,
   TrendingUp as TrendingUpIcon,
   AccessTime as AccessTimeIcon,
   Assignment as AssignmentListIcon,
-  CalendarToday as CalendarIcon
+  EventNote as CalendarIcon,
+  Analytics as AnalyticsIcon,
+  Task as TaskIcon,
+  RocketLaunch as RocketIcon,
+  Dashboard as DashboardIcon
 } from '@mui/icons-material';
 import { alpha, useTheme } from '@mui/material/styles';
 
@@ -277,9 +281,10 @@ const AssignmentsListPage: React.FC = () => {
           sx={{
             cursor: 'pointer',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            borderRadius: 3,
             '&:hover': {
-              transform: 'translateY(-4px)',
-              boxShadow: theme.shadows[8],
+              transform: 'translateY(-8px)',
+              boxShadow: `0 12px 40px ${alpha(theme.palette.primary.main, 0.2)}`,
               '& .assignment-actions': {
                 opacity: 1
               }
@@ -300,9 +305,10 @@ const AssignmentsListPage: React.FC = () => {
                 size="small"
                 variant="outlined"
                 sx={{ 
-                  fontWeight: 500,
+                  fontWeight: 600,
                   bgcolor: alpha(theme.palette.primary.main, 0.08),
-                  borderColor: alpha(theme.palette.primary.main, 0.2)
+                  borderColor: alpha(theme.palette.primary.main, 0.2),
+                  borderRadius: 2
                 }}
               />
               <Box display="flex" alignItems="center" gap={1}>
@@ -312,6 +318,7 @@ const AssignmentsListPage: React.FC = () => {
                   color={statusColor}
                   size="small"
                   variant="filled"
+                  sx={{ borderRadius: 2, fontWeight: 600 }}
                 />
               </Box>
             </Box>
@@ -319,7 +326,7 @@ const AssignmentsListPage: React.FC = () => {
             {/* Assignment title */}
             <Typography
               variant="h6"
-              fontWeight="bold"
+              fontWeight="700"
               gutterBottom
               sx={{
                 display: '-webkit-box',
@@ -338,7 +345,7 @@ const AssignmentsListPage: React.FC = () => {
             <Box display="flex" alignItems="center" justifyContent="space-between">
               <Box display="flex" alignItems="center" gap={1}>
                 <CalendarIcon fontSize="small" color="action" />
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" fontWeight={500}>
                   {formatDueDate(assignment.due_date)}
                 </Typography>
               </Box>
@@ -347,7 +354,15 @@ const AssignmentsListPage: React.FC = () => {
                 <Typography
                   variant="caption"
                   color={assignment.is_overdue ? 'error.main' : 'text.secondary'}
-                  fontWeight={500}
+                  fontWeight={600}
+                  sx={{
+                    px: 1,
+                    py: 0.5,
+                    borderRadius: 1,
+                    bgcolor: assignment.is_overdue 
+                      ? alpha(theme.palette.error.main, 0.1)
+                      : alpha(theme.palette.primary.main, 0.08)
+                  }}
                 >
                   {assignment.is_overdue 
                     ? `${Math.abs(assignment.days_until_due)} days overdue`
@@ -365,15 +380,15 @@ const AssignmentsListPage: React.FC = () => {
   };
 
   const renderStatsCard = (title: string, value: number, icon: React.ReactNode, color: string) => (
-    <Card elevation={2}>
+    <Card elevation={2} sx={{ borderRadius: 3 }}>
       <CardContent sx={{ textAlign: 'center', p: 3 }}>
         <Avatar sx={{ bgcolor: color, mx: 'auto', mb: 2, width: 56, height: 56 }}>
           {icon}
         </Avatar>
-        <Typography variant="h4" fontWeight="bold" gutterBottom>
+        <Typography variant="h4" fontWeight="800" gutterBottom>
           {value}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" color="text.secondary" fontWeight={600}>
           {title}
         </Typography>
       </CardContent>
@@ -385,11 +400,11 @@ const AssignmentsListPage: React.FC = () => {
       <Box sx={{ flexGrow: 1, minHeight: '100vh', bgcolor: 'grey.50' }}>
         <Header title="Core Pilot" />
         <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-          <Skeleton variant="rectangular" height={200} sx={{ mb: 4, borderRadius: 2 }} />
+          <Skeleton variant="rectangular" height={200} sx={{ mb: 4, borderRadius: 3 }} />
           <Grid container spacing={3}>
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Grid size={{ xs: 12, md: 6, lg: 4 }} key={i}>
-                <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2 }} />
+              <Grid size={{xs: 12, md: 6, lg: 4}} key={i}>
+                <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 3 }} />
               </Grid>
             ))}
           </Grid>
@@ -412,7 +427,7 @@ const AssignmentsListPage: React.FC = () => {
               mb: 4,
               background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
               color: 'white',
-              borderRadius: 3,
+              borderRadius: 4,
               position: 'relative',
               overflow: 'hidden'
             }}
@@ -446,68 +461,83 @@ const AssignmentsListPage: React.FC = () => {
             <Box sx={{ position: 'relative', zIndex: 1 }}>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Box>
-                  <Typography variant="h3" component="h1" fontWeight="bold" gutterBottom>
+                  <Typography variant="h3" component="h1" fontWeight="800" gutterBottom>
                     Assignment Center
                   </Typography>
-                  <Typography variant="h6" sx={{ opacity: 0.9 }}>
+                  <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 400 }}>
                     Manage and track all your assignments in one place
                   </Typography>
                 </Box>
-                <Button
-                  variant="contained"
-                  size="large"
-                  startIcon={<AddIcon />}
-                  onClick={handleCreateAssignment}
+                <Avatar
                   sx={{
-                    bgcolor: 'white',
-                    color: theme.palette.primary.main,
-                    '&:hover': {
-                      bgcolor: alpha('#fff', 0.9)
-                    },
-                    borderRadius: 2,
-                    px: 3,
-                    textTransform: 'none',
-                    fontWeight: 600
+                    width: 80,
+                    height: 80,
+                    bgcolor: alpha('#fff', 0.15),
+                    border: `3px solid ${alpha('#fff', 0.3)}`
                   }}
                 >
-                  Create Assignment
-                </Button>
+                  <RocketIcon sx={{ fontSize: 40 }} />
+                </Avatar>
               </Box>
 
               {/* Statistics Grid */}
               {!statsLoading && stats && (
                 <Grid container spacing={3}>
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    {renderStatsCard(
-                      'Total Assignments',
-                      stats.total_assignments,
-                      <AssignmentListIcon sx={{ fontSize: 28 }} />,
-                      alpha('#fff', 0.15)
-                    )}
+                  <Grid size={{xs: 12, sm: 6, md: 3}}>
+                    <Card sx={{ 
+                      bgcolor: alpha('#fff', 0.15), 
+                      backdropFilter: 'blur(10px)',
+                      borderRadius: 3,
+                      border: `1px solid ${alpha('#fff', 0.2)}`
+                    }}>
+                      <CardContent sx={{ textAlign: 'center', color: 'white', p: 3 }}>
+                        <TaskIcon sx={{ fontSize: 40, mb: 1 }} />
+                        <Typography variant="h3" fontWeight="800">{stats.total_assignments}</Typography>
+                        <Typography variant="body1" fontWeight={600}>Total Assignments</Typography>
+                      </CardContent>
+                    </Card>
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    {renderStatsCard(
-                      'Overdue',
-                      stats.overdue,
-                      <WarningIcon sx={{ fontSize: 28 }} />,
-                      theme.palette.error.main
-                    )}
+                  <Grid size={{xs: 12, sm: 6, md: 3}}>
+                    <Card sx={{ 
+                      bgcolor: alpha('#fff', 0.15), 
+                      backdropFilter: 'blur(10px)',
+                      borderRadius: 3,
+                      border: `1px solid ${alpha('#fff', 0.2)}`
+                    }}>
+                      <CardContent sx={{ textAlign: 'center', color: 'white', p: 3 }}>
+                        <WarningIcon sx={{ fontSize: 40, mb: 1 }} />
+                        <Typography variant="h3" fontWeight="800">{stats.overdue}</Typography>
+                        <Typography variant="body1" fontWeight={600}>Overdue</Typography>
+                      </CardContent>
+                    </Card>
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    {renderStatsCard(
-                      'Due Soon',
-                      stats.due_soon,
-                      <AccessTimeIcon sx={{ fontSize: 28 }} />,
-                      theme.palette.warning.main
-                    )}
+                  <Grid size={{xs: 12, sm: 6, md: 3}}>
+                    <Card sx={{ 
+                      bgcolor: alpha('#fff', 0.15), 
+                      backdropFilter: 'blur(10px)',
+                      borderRadius: 3,
+                      border: `1px solid ${alpha('#fff', 0.2)}`
+                    }}>
+                      <CardContent sx={{ textAlign: 'center', color: 'white', p: 3 }}>
+                        <AccessTimeIcon sx={{ fontSize: 40, mb: 1 }} />
+                        <Typography variant="h3" fontWeight="800">{stats.due_soon}</Typography>
+                        <Typography variant="body1" fontWeight={600}>Due Soon</Typography>
+                      </CardContent>
+                    </Card>
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    {renderStatsCard(
-                      'Upcoming',
-                      stats.upcoming,
-                      <TrendingUpIcon sx={{ fontSize: 28 }} />,
-                      theme.palette.success.main
-                    )}
+                  <Grid size={{xs: 12, sm: 6, md: 3}}>
+                    <Card sx={{ 
+                      bgcolor: alpha('#fff', 0.15), 
+                      backdropFilter: 'blur(10px)',
+                      borderRadius: 3,
+                      border: `1px solid ${alpha('#fff', 0.2)}`
+                    }}>
+                      <CardContent sx={{ textAlign: 'center', color: 'white', p: 3 }}>
+                        <TrendingUpIcon sx={{ fontSize: 40, mb: 1 }} />
+                        <Typography variant="h3" fontWeight="800">{stats.upcoming}</Typography>
+                        <Typography variant="body1" fontWeight={600}>Upcoming</Typography>
+                      </CardContent>
+                    </Card>
                   </Grid>
                 </Grid>
               )}
@@ -516,8 +546,8 @@ const AssignmentsListPage: React.FC = () => {
         </Fade>
 
         {/* Filters and Controls */}
-        <Card elevation={2} sx={{ mb: 4 }}>
-          <CardContent>
+        <Card elevation={2} sx={{ mb: 4, borderRadius: 3 }}>
+          <CardContent sx={{ p: 3 }}>
             {/* Tabs for filtering by status */}
             <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
               <Tabs
@@ -526,6 +556,14 @@ const AssignmentsListPage: React.FC = () => {
                 aria-label="assignment status tabs"
                 variant="scrollable"
                 scrollButtons="auto"
+                sx={{
+                  '& .MuiTab-root': {
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    borderRadius: 2,
+                    minHeight: 48
+                  }
+                }}
               >
                 <Tab 
                   label="All Assignments" 
@@ -552,7 +590,7 @@ const AssignmentsListPage: React.FC = () => {
 
             {/* Search and Filter Controls */}
             <Grid container spacing={3} alignItems="center">
-              <Grid size={{ xs: 12, md: 4 }}>
+              <Grid size={{xs: 12, md: 4}}>
                 <TextField
                   fullWidth
                   placeholder="Search assignments..."
@@ -573,18 +611,18 @@ const AssignmentsListPage: React.FC = () => {
                       </InputAdornment>
                     )
                   }}
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                 />
               </Grid>
 
-              <Grid size={{ xs: 12, md: 3 }}>
+              <Grid size={{xs: 12, md: 3}}>
                 <FormControl fullWidth>
                   <InputLabel>Filter by Course</InputLabel>
                   <Select
                     value={selectedCourse}
                     onChange={(e) => handleCourseFilter(e.target.value as number | '')}
                     label="Filter by Course"
-                    sx={{ borderRadius: 2 }}
+                    sx={{ borderRadius: 3 }}
                   >
                     <MenuItem value="">All Courses</MenuItem>
                     {courses.map((course) => (
@@ -596,14 +634,14 @@ const AssignmentsListPage: React.FC = () => {
                 </FormControl>
               </Grid>
 
-              <Grid size={{ xs: 12, md: 3 }}>
+              <Grid size={{xs: 12, md: 3}}>
                 <FormControl fullWidth>
                   <InputLabel>Sort By</InputLabel>
                   <Select
                     value={filters.sort_by}
                     onChange={(e) => handleSortChange(e.target.value)}
                     label="Sort By"
-                    sx={{ borderRadius: 2 }}
+                    sx={{ borderRadius: 3 }}
                   >
                     <MenuItem value="due_date">Due Date</MenuItem>
                     <MenuItem value="title">Title</MenuItem>
@@ -612,13 +650,13 @@ const AssignmentsListPage: React.FC = () => {
                 </FormControl>
               </Grid>
 
-              <Grid size={{ xs: 12, md: 2 }}>
+              <Grid size={{xs: 12, md: 2}}>
                 <Box display="flex" gap={1}>
                   <Button
                     variant="outlined"
                     onClick={handleOrderChange}
                     startIcon={<SortIcon />}
-                    sx={{ borderRadius: 2, textTransform: 'none' }}
+                    sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 600 }}
                   >
                     {filters.order === 'asc' ? 'Ascending' : 'Descending'}
                   </Button>
@@ -652,13 +690,13 @@ const AssignmentsListPage: React.FC = () => {
                 p: 8,
                 textAlign: 'center',
                 bgcolor: 'background.paper',
-                borderRadius: 3,
+                borderRadius: 4,
                 border: 2,
                 borderColor: 'divider',
                 borderStyle: 'dashed'
               }}
             >
-              <AssignmentIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
+              <DashboardIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
               <Typography variant="h5" gutterBottom fontWeight="bold">
                 No assignments found
               </Typography>
@@ -673,7 +711,13 @@ const AssignmentsListPage: React.FC = () => {
                 startIcon={<AddIcon />}
                 onClick={handleCreateAssignment}
                 size="large"
-                sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+                sx={{ 
+                  borderRadius: 3, 
+                  textTransform: 'none', 
+                  fontWeight: 700,
+                  px: 4,
+                  py: 1.5 
+                }}
               >
                 Create Assignment
               </Button>
@@ -681,7 +725,7 @@ const AssignmentsListPage: React.FC = () => {
           ) : (
             <Grid container spacing={3}>
               {filteredAssignments.map((assignment, index) => (
-                <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={assignment.id}>
+                <Grid key={assignment.id} size={{xs:12, sm:6, lg:4}} >
                   {renderAssignmentCard(assignment, index)}
                 </Grid>
               ))}
@@ -708,7 +752,7 @@ const AssignmentsListPage: React.FC = () => {
           onClose={() => setSnackbar({ ...snackbar, open: false })}
           severity={snackbar.severity}
           variant="filled"
-          sx={{ borderRadius: 2 }}
+          sx={{ borderRadius: 3 }}
         >
           {snackbar.message}
         </Alert>

@@ -45,9 +45,22 @@ export interface AssignmentListItem {
 
 // Error handling wrapper
 const handleApiError = (error: any) => {
-  if (error.response) {
+  if (error.response?.data?.detail) {
+    // Handle FastAPI validation errors (array format)
+    if (Array.isArray(error.response.data.detail)) {
+      const validationErrors = error.response.data.detail.map((err: any) => {
+        const field = err.loc?.[err.loc.length - 1] || 'field';
+        return `${field}: ${err.msg || 'Invalid value'}`;
+      }).join(', ');
+      throw new Error(validationErrors);
+    }
+    // Handle simple error messages
+    throw new Error(error.response.data.detail);
+  } else if (error.response?.data?.message) {
+    throw new Error(error.response.data.message);
+  } else if (error.response) {
     // Server responded with error status
-    throw new Error(error.response.data?.detail || 'Server error occurred');
+    throw new Error(`Server error: ${error.response.status}`);
   } else if (error.request) {
     // Network error
     throw new Error('Network error - please check your connection');

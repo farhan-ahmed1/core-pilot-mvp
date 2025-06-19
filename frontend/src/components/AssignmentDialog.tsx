@@ -6,27 +6,30 @@ import {
   DialogActions,
   TextField,
   Button,
-  Box,
-  Typography,
-  Alert,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
-  Stack,
+  Box,
+  Typography,
+  Alert,
   Chip,
-  CircularProgress
+  Stack,
+  Avatar
 } from '@mui/material';
 import {
-  Assignment as AssignmentIcon,
-  Schedule as ScheduleIcon,
+  LibraryBooks as AssignmentIcon,
+  AutoStories as SchoolIcon,
+  EventNote as ScheduleIcon,
   Description as DescriptionIcon,
-  School as SchoolIcon
+  Close as CloseIcon,
+  Save as SaveIcon,
+  NoteAdd as CreateIcon
 } from '@mui/icons-material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { addDays } from 'date-fns';
+import { alpha, useTheme } from '@mui/material/styles';
 
 // Import API functions
 import { createAssignment, AssignmentCreate } from '../services/assignmentService';
@@ -35,26 +38,38 @@ import { getCourses, Course } from '../services/courseService';
 interface AssignmentDialogProps {
   open: boolean;
   onClose: () => void;
-  onAssignmentCreated: (assignment: any) => void;
   preselectedCourseId?: number;
+  onAssignmentCreated: (assignment: any) => void;
 }
 
 const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
   open,
   onClose,
-  onAssignmentCreated,
-  preselectedCourseId
+  preselectedCourseId,
+  onAssignmentCreated
 }) => {
-  const [courses, setCourses] = useState<Course[]>([]);
+  const theme = useTheme();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [courses, setCourses] = useState<Course[]>([]);
+  
+  // Set default due date to tomorrow at 11:59 PM
+  const getDefaultDueDate = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(23, 59, 0, 0);
+    return tomorrow;
+  };
+  
   const [form, setForm] = useState({
     title: '',
     description: '',
     prompt: '',
-    due_date: addDays(new Date(), 7), // Default to 1 week from now
-    course_id: 0 // Always start with 0, then set to preselected if valid
+    due_date: getDefaultDueDate(),
+    course_id: 0
   });
+
+  const selectedCourse = courses.find(c => c.id === form.course_id);
 
   // Load courses when dialog opens
   useEffect(() => {
@@ -65,12 +80,12 @@ const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
         title: '',
         description: '',
         prompt: '',
-        due_date: addDays(new Date(), 7),
-        course_id: 0 // Always start with 0, then set to preselected if valid
+        due_date: getDefaultDueDate(),
+        course_id: preselectedCourseId || 0
       });
       setError(null);
     }
-  }, [open]);
+  }, [open, preselectedCourseId]);
 
   // Set preselected course after courses are loaded
   useEffect(() => {
@@ -109,6 +124,13 @@ const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
       return;
     }
 
+    // Validate due date is in the future
+    const now = new Date();
+    if (form.due_date <= now) {
+      setError('Due date must be in the future');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -123,8 +145,9 @@ const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
 
       const newAssignment = await createAssignment(assignmentData);
       onAssignmentCreated(newAssignment);
-      onClose();
+      handleClose();
     } catch (error: any) {
+      console.error('Assignment creation error:', error);
       setError(error.message || 'Failed to create assignment');
     } finally {
       setLoading(false);
@@ -132,44 +155,89 @@ const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
   };
 
   const handleClose = () => {
-    if (!loading) {
-      onClose();
-    }
+    setForm({
+      title: '',
+      description: '',
+      prompt: '',
+      due_date: getDefaultDueDate(),
+      course_id: preselectedCourseId || 0
+    });
+    setError(null);
+    onClose();
   };
-
-  const selectedCourse = courses.find(c => c.id === form.course_id);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Dialog
-        open={open}
+      <Dialog 
+        open={open} 
         onClose={handleClose}
         maxWidth="md"
         fullWidth
         PaperProps={{
-          sx: { borderRadius: 3 }
+          sx: {
+            borderRadius: 4,
+            overflow: 'hidden'
+          }
         }}
       >
-        <DialogTitle sx={{ pb: 1 }}>
-          <Box display="flex" alignItems="center">
-            <AssignmentIcon sx={{ mr: 1, color: 'primary.main' }} />
-            <Typography variant="h5" fontWeight="bold">
-              Create New Assignment
-            </Typography>
+        {/* Enhanced Header with Gradient */}
+        <Box
+          sx={{
+            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+            color: 'white',
+            p: 3,
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
+          {/* Decorative background element */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: -20,
+              right: -20,
+              width: 100,
+              height: 100,
+              borderRadius: '50%',
+              bgcolor: alpha('#fff', 0.1),
+              zIndex: 0
+            }}
+          />
+          
+          <Box sx={{ position: 'relative', zIndex: 1 }}>
+            <Box display="flex" alignItems="center" mb={2}>
+              <Avatar
+                sx={{
+                  mr: 2,
+                  bgcolor: alpha('#fff', 0.15),
+                  width: 48,
+                  height: 48
+                }}
+              >
+                <CreateIcon sx={{ color: 'white' }} />
+              </Avatar>
+              <Typography variant="h5" fontWeight="800">
+                Create New Assignment
+              </Typography>
+            </Box>
+            {selectedCourse && (
+              <Chip
+                label={`${selectedCourse.name} • ${selectedCourse.term}`}
+                icon={<SchoolIcon />}
+                sx={{
+                  bgcolor: alpha('#fff', 0.15),
+                  color: 'white',
+                  fontWeight: 600,
+                  '& .MuiChip-icon': { color: 'white' }
+                }}
+              />
+            )}
           </Box>
-          {selectedCourse && (
-            <Chip
-              label={`${selectedCourse.name} • ${selectedCourse.term}`}
-              icon={<SchoolIcon />}
-              variant="outlined"
-              sx={{ mt: 1 }}
-            />
-          )}
-        </DialogTitle>
+        </Box>
         
         <form onSubmit={handleSubmit}>
-          <DialogContent sx={{ pt: 2 }}>
-            <Stack spacing={3}>
+          <DialogContent sx={{ p: 4 }}>
+            <Stack spacing={4}>
               {/* Course Selection */}
               <FormControl fullWidth required>
                 <InputLabel>Course</InputLabel>
@@ -178,6 +246,7 @@ const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
                   onChange={(e) => setForm({ ...form, course_id: e.target.value as number })}
                   label="Course"
                   disabled={!!preselectedCourseId}
+                  sx={{ borderRadius: 3 }}
                 >
                   <MenuItem value={0} disabled>
                     Select a course
@@ -185,7 +254,7 @@ const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
                   {courses.map((course) => (
                     <MenuItem key={course.id} value={course.id}>
                       <Box>
-                        <Typography variant="body1">{course.name}</Typography>
+                        <Typography variant="body1" fontWeight={600}>{course.name}</Typography>
                         <Typography variant="caption" color="text.secondary">
                           {course.term} • {course.description || 'No description'}
                         </Typography>
@@ -204,20 +273,34 @@ const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
                 required
                 placeholder="e.g., Research Paper on Modern Architecture"
                 InputProps={{
-                  startAdornment: <AssignmentIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                  startAdornment: (
+                    <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
+                      <AssignmentIcon sx={{ color: 'text.secondary' }} />
+                    </Box>
+                  )
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 3
+                  }
                 }}
               />
 
               {/* Due Date */}
               <Box>
-                <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                  <ScheduleIcon sx={{ mr: 1, fontSize: 20 }} />
+                <Typography variant="subtitle1" gutterBottom fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <ScheduleIcon />
                   Due Date
                 </Typography>
                 <DateTimePicker
                   value={form.due_date}
                   onChange={(date) => setForm({ ...form, due_date: date || new Date() })}
-                  sx={{ width: '100%' }}
+                  sx={{ 
+                    width: '100%',
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 3
+                    }
+                  }}
                   minDate={new Date()}
                 />
               </Box>
@@ -232,13 +315,22 @@ const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
                 rows={2}
                 placeholder="Brief description of the assignment..."
                 InputProps={{
-                  startAdornment: <DescriptionIcon sx={{ mr: 1, color: 'text.secondary', alignSelf: 'flex-start', mt: 1 }} />
+                  startAdornment: (
+                    <Box sx={{ mr: 1, alignSelf: 'flex-start', mt: 1 }}>
+                      <DescriptionIcon sx={{ color: 'text.secondary' }} />
+                    </Box>
+                  )
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 3
+                  }
                 }}
               />
 
               {/* Assignment Prompt */}
               <Box>
-                <Typography variant="subtitle2" gutterBottom fontWeight="bold">
+                <Typography variant="subtitle1" gutterBottom fontWeight={700}>
                   Assignment Instructions & Requirements *
                 </Typography>
                 <TextField
@@ -246,14 +338,15 @@ const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
                   onChange={(e) => setForm({ ...form, prompt: e.target.value })}
                   fullWidth
                   multiline
-                  rows={6}
+                  rows={8}
                   required
                   placeholder="Enter detailed instructions, requirements, grading criteria, and any other information students need to complete this assignment..."
                   variant="outlined"
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       fontSize: '0.95rem',
-                      lineHeight: 1.6
+                      lineHeight: 1.6,
+                      borderRadius: 3
                     }
                   }}
                 />
@@ -264,18 +357,32 @@ const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
 
               {/* Error Display */}
               {error && (
-                <Alert severity="error" sx={{ mt: 2 }}>
+                <Alert 
+                  severity="error" 
+                  sx={{ 
+                    borderRadius: 3,
+                    '& .MuiAlert-message': {
+                      fontWeight: 500
+                    }
+                  }}
+                >
                   {error}
                 </Alert>
               )}
             </Stack>
           </DialogContent>
 
-          <DialogActions sx={{ p: 3, pt: 1 }}>
+          <DialogActions sx={{ p: 4, pt: 2, bgcolor: alpha(theme.palette.grey[50], 0.5) }}>
             <Button 
               onClick={handleClose} 
               disabled={loading}
-              sx={{ textTransform: 'none' }}
+              sx={{ 
+                textTransform: 'none',
+                fontWeight: 600,
+                borderRadius: 3,
+                px: 3
+              }}
+              startIcon={<CloseIcon />}
             >
               Cancel
             </Button>
@@ -285,19 +392,20 @@ const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
               disabled={loading}
               sx={{
                 textTransform: 'none',
-                fontWeight: 600,
-                borderRadius: 2,
-                minWidth: 120
+                fontWeight: 700,
+                borderRadius: 3,
+                px: 4,
+                py: 1.5,
+                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
+                '&:hover': {
+                  transform: 'translateY(-1px)',
+                  boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`
+                }
               }}
+              startIcon={<SaveIcon />}
             >
-              {loading ? (
-                <Box display="flex" alignItems="center">
-                  <CircularProgress size={16} sx={{ mr: 1 }} />
-                  Creating...
-                </Box>
-              ) : (
-                'Create Assignment'
-              )}
+              {loading ? 'Creating...' : 'Create Assignment'}
             </Button>
           </DialogActions>
         </form>
