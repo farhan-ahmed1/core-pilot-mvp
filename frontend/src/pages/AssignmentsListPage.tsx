@@ -34,16 +34,13 @@ import {
   Sort as SortIcon,
   ViewList as ListViewIcon,
   ViewModule as GridViewIcon,
-  LibraryBooks as AssignmentIcon,
   Warning as WarningIcon,
   CheckCircle as CheckCircleIcon,
   Add as AddIcon,
   AutoStories as SchoolIcon,
   TrendingUp as TrendingUpIcon,
   AccessTime as AccessTimeIcon,
-  Assignment as AssignmentListIcon,
   EventNote as CalendarIcon,
-  Analytics as AnalyticsIcon,
   Task as TaskIcon,
   RocketLaunch as RocketIcon,
   Dashboard as DashboardIcon
@@ -378,22 +375,6 @@ const AssignmentsListPage: React.FC = () => {
       </Slide>
     );
   };
-
-  const renderStatsCard = (title: string, value: number, icon: React.ReactNode, color: string) => (
-    <Card elevation={2} sx={{ borderRadius: 3 }}>
-      <CardContent sx={{ textAlign: 'center', p: 3 }}>
-        <Avatar sx={{ bgcolor: color, mx: 'auto', mb: 2, width: 56, height: 56 }}>
-          {icon}
-        </Avatar>
-        <Typography variant="h4" fontWeight="800" gutterBottom>
-          {value}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" fontWeight={600}>
-          {title}
-        </Typography>
-      </CardContent>
-    </Card>
-  );
 
   if (loading) {
     return (

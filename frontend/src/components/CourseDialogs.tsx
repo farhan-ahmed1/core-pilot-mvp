@@ -11,7 +11,6 @@ import {
   IconButton,
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
-import { Course } from '../services/courseService';
 
 interface CourseDialogsProps {
   // Create Course Dialog
@@ -28,7 +27,6 @@ interface CourseDialogsProps {
 
   // Edit Course Dialog
   editDialogOpen: boolean;
-  editingCourse: Course | null;
   editCourseName: string;
   editCourseTerm: string;
   editCourseDescription: string;
@@ -52,7 +50,6 @@ const CourseDialogs: React.FC<CourseDialogsProps> = ({
   onNewCourseDescriptionChange,
   onCreateCourse,
   editDialogOpen,
-  editingCourse,
   editCourseName,
   editCourseTerm,
   editCourseDescription,

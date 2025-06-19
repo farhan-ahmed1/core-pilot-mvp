@@ -8,7 +8,6 @@ import {
   Avatar,
   Paper,
   Fade,
-  Container,
 } from '@mui/material';
 import {
   Assignment as AssignmentIcon,
@@ -22,7 +21,6 @@ interface DashboardStatsProps {
   totalCourses: number;
   totalAssignments: number;
   completedAssignments: number;
-  inProgressAssignments: number;
   completionRate: number;
 }
 
@@ -30,7 +28,6 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
   totalCourses,
   totalAssignments,
   completedAssignments,
-  inProgressAssignments,
   completionRate,
 }) => {
   const theme = useTheme();
@@ -116,7 +113,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
           </Box>
 
           <Grid container spacing={3}>
-            {statsCards.map((stat, index) => (
+            {statsCards.map((stat) => (
               <Grid size={{ xs: 12, sm: 6, md: 3 }} key={stat.title}>
                 <Card
                   sx={{

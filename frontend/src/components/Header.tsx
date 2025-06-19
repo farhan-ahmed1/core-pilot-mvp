@@ -21,7 +21,6 @@ import {
   Person as PersonIcon,
   Logout as LogoutIcon,
   Notifications as NotificationsIcon,
-  School as SchoolIcon,
   RocketLaunch as RocketIcon,
   Settings as SettingsIcon
 } from '@mui/icons-material';

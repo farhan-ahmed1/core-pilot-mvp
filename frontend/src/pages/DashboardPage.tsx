@@ -18,6 +18,7 @@ import Header from '../components/Header';
 import DashboardStats from '../components/DashboardStats';
 import CourseGrid from '../components/CourseGrid';
 import CourseDialogs from '../components/CourseDialogs';
+import AssignmentDialog from '../components/AssignmentDialog';
 
 // Import hooks and services
 import { useCourseManagement } from '../hooks/useCourseManagement';
@@ -45,7 +46,6 @@ const DashboardPage: React.FC = () => {
     handleCreateCourse,
     // Edit dialog props
     editDialogOpen,
-    editingCourse,
     editCourseName,
     editCourseTerm,
     editCourseDescription,
@@ -63,6 +63,8 @@ const DashboardPage: React.FC = () => {
   // Local state for assignments and UI
   const [assignments, setAssignments] = useState<AssignmentListItem[]>([]);
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+  const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
+  const [preselectedCourseId, setPreselectedCourseId] = useState<number | undefined>(undefined);
 
   // Load assignments on component mount
   useEffect(() => {
@@ -84,7 +86,6 @@ const DashboardPage: React.FC = () => {
   const totalCourses = courses.length;
   const totalAssignments = assignments.length;
   const completedAssignments = assignments.filter(a => !a.is_overdue).length;
-  const inProgressAssignments = assignments.filter(a => a.is_overdue).length;
   const completionRate = totalAssignments > 0 ? (completedAssignments / totalAssignments) * 100 : 0;
 
   // Handle FAB menu
@@ -102,7 +103,8 @@ const DashboardPage: React.FC = () => {
   };
 
   const handleCreateAssignment = () => {
-    navigate('/assignments');
+    setPreselectedCourseId(undefined);
+    setAssignmentDialogOpen(true);
     handleMenuClose();
   };
 
@@ -111,9 +113,21 @@ const DashboardPage: React.FC = () => {
     navigate(`/assignments/${assignmentId}`);
   };
 
-  // Add assignment handler for CourseGrid
+  // Add assignment handler for CourseGrid - now opens dialog with preselected course
   const handleAddAssignment = (courseId: number) => {
-    navigate('/assignments', { state: { preselectedCourseId: courseId } });
+    setPreselectedCourseId(courseId);
+    setAssignmentDialogOpen(true);
+  };
+
+  // Handle successful assignment creation
+  const handleAssignmentCreated = async () => {
+    // Refresh assignments list
+    try {
+      const allAssignments = await getAllAssignments();
+      setAssignments(allAssignments);
+    } catch (error) {
+      console.error('Error reloading assignments:', error);
+    }
   };
 
   if (loading) {
@@ -137,7 +151,6 @@ const DashboardPage: React.FC = () => {
           totalCourses={totalCourses}
           totalAssignments={totalAssignments}
           completedAssignments={completedAssignments}
-          inProgressAssignments={inProgressAssignments}
           completionRate={completionRate}
         />
 
@@ -233,7 +246,6 @@ const DashboardPage: React.FC = () => {
           onNewCourseDescriptionChange={setNewCourseDescription}
           onCreateCourse={handleCreateCourse}
           editDialogOpen={editDialogOpen}
-          editingCourse={editingCourse}
           editCourseName={editCourseName}
           editCourseTerm={editCourseTerm}
           editCourseDescription={editCourseDescription}
@@ -243,6 +255,17 @@ const DashboardPage: React.FC = () => {
           onEditCourseTermChange={setEditCourseTerm}
           onEditCourseDescriptionChange={setEditCourseDescription}
           onUpdateCourse={handleUpdateCourse}
+        />
+
+        {/* Assignment Creation Dialog */}
+        <AssignmentDialog
+          open={assignmentDialogOpen}
+          onClose={() => {
+            setAssignmentDialogOpen(false);
+            setPreselectedCourseId(undefined);
+          }}
+          preselectedCourseId={preselectedCourseId}
+          onAssignmentCreated={handleAssignmentCreated}
         />
 
         {/* Snackbar for notifications */}

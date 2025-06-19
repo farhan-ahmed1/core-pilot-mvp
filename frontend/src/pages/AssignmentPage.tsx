@@ -34,7 +34,6 @@ import {
   ArrowBack as ArrowBackIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
-  Add as AddIcon,
   EventNote as CalendarIcon,
   Description as DescriptionIcon,
   School as SchoolIcon,

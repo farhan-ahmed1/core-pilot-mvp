@@ -12,7 +12,6 @@ import {
   CardContent,
   Grid,
   Divider,
-  IconButton,
   Paper,
   Chip,
   Badge,
@@ -33,9 +32,7 @@ import {
   Email as EmailIcon,
   CalendarToday as CalendarIcon,
   Security as SecurityIcon,
-  Notifications as NotificationsIcon,
   Palette as PaletteIcon,
-  Language as LanguageIcon,
   Shield as ShieldIcon,
   Verified as VerifiedIcon,
   School as SchoolIcon,
@@ -86,7 +83,6 @@ const ProfilePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
   

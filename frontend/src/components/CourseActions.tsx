@@ -2,14 +2,12 @@ import React from 'react';
 import {
   Menu,
   MenuItem,
-  IconButton,
   Fab,
   Zoom,
   Snackbar,
   Alert
 } from '@mui/material';
 import {
-  MoreVert as MoreVertIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Add as AddIcon
@@ -19,8 +17,6 @@ import { useTheme } from '@mui/material/styles';
 interface CourseActionsProps {
   // Menu state
   menuAnchorEl: HTMLElement | null;
-  selectedCourseId: number | null;
-  onMenuOpen: (event: React.MouseEvent<HTMLElement>, courseId: number) => void;
   onMenuClose: () => void;
   
   // Actions
@@ -35,8 +31,6 @@ interface CourseActionsProps {
 
 const CourseActions: React.FC<CourseActionsProps> = ({
   menuAnchorEl,
-  selectedCourseId,
-  onMenuOpen,
   onMenuClose,
   onEditCourse,
   onDeleteCourse,
