@@ -19,7 +19,7 @@ import {
 } from '@mui/icons-material';
 
 // Import components
-import CourseAssignmentList from '../../components/courses/CourseAssignmentList';
+import AssignmentList from '../../components/assignments/AssignmentList';
 import AssignmentDialog from '../../components/assignments/AssignmentDialog';
 import LoadingScreen from '../../components/common/LoadingScreen';
 
@@ -274,7 +274,7 @@ const CourseAssignmentsPage: React.FC = () => {
             </Button>
           </Box>
         ) : (
-          <CourseAssignmentList assignments={assignments} />
+          <AssignmentList assignments={assignments} />
         )}
       </Box>
 
