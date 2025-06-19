@@ -37,7 +37,7 @@ import {
 } from '@mui/icons-material';
 import { alpha, useTheme } from '@mui/material/styles';
 import axios from 'axios';
-import LoadingScreen from '../components/LoadingScreen';
+import LoadingScreen from '../../components/common/LoadingScreen';
 
 interface Profile {
   id: string;

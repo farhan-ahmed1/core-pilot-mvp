@@ -12,9 +12,9 @@ import {
   Fade
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { signIn, signUp } from '../services/authService';
-import { registerUserInBackend } from '../services/userService';
-import { useAuth } from '../contexts/AuthContext';
+import { signIn, signUp } from '../../services/authService';
+import { registerUserInBackend } from '../../services/userService';
+import { useAuth } from '../../contexts/AuthContext';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');

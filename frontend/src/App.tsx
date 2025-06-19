@@ -7,16 +7,16 @@ import theme from './theme';
 import { AuthProvider } from './contexts/AuthContext';
 
 // Import components
-import ProtectedRoute from './components/ProtectedRoute';
-import MainLayout from './components/MainLayout';
+import ProtectedRoute from './components/layout/ProtectedRoute';
+import MainLayout from './components/layout/MainLayout';
 
 // Import page components
-import DashboardPage from "./pages/DashboardPage";
-import LoginPage from "./pages/LoginPage";
-import AssignmentPage from "./pages/AssignmentPage";
-import AssignmentsListPage from "./pages/AssignmentsListPage";
-import NotFoundPage from "./pages/NotFoundPage";
-import ProfilePage from "./pages/ProfilePage";
+import DashboardPage from "./pages/dashboard/DashboardPage";
+import LoginPage from "./pages/auth/LoginPage";
+import AssignmentPage from "./pages/assignments/AssignmentPage";
+import AssignmentsListPage from "./pages/assignments/AssignmentsListPage";
+import NotFoundPage from "./pages/errors/NotFoundPage";
+import ProfilePage from "./pages/profile/ProfilePage";
 
 function App() {
   return (

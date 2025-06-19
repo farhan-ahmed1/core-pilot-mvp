@@ -36,7 +36,7 @@ import {
 } from '@mui/icons-material';
 
 // Import services and hooks
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { 
   getAssignmentStats, 
   getUpcomingAssignments, 
@@ -44,14 +44,14 @@ import {
   AssignmentListItem,
   getDueDateStatus,
   getDueDateColor
-} from '../services/assignmentService';
-import { useCourseManagement } from '../hooks/useCourseManagement';
+} from '../../services/assignmentService';
+import { useCourseManagement } from '../../hooks/useCourseManagement';
 
 // Import dialogs and components
-import CourseDialogs from '../components/CourseDialogs';
-import CourseActions from '../components/CourseActions';
-import AssignmentDialog from '../components/AssignmentDialog';
-import LoadingScreen from '../components/LoadingScreen';
+import CourseDialogs from '../../components/courses/CourseDialogs';
+import CourseActions from '../../components/courses/CourseActions';
+import AssignmentDialog from '../../components/assignments/AssignmentDialog';
+import LoadingScreen from '../../components/common/LoadingScreen';
 
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();

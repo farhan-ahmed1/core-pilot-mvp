@@ -61,8 +61,8 @@ import {
 import { alpha, useTheme } from '@mui/material/styles';
 
 // Import shared components
-import AssignmentDialog from '../components/AssignmentDialog';
-import LoadingScreen from '../components/LoadingScreen';
+import AssignmentDialog from '../../components/assignments/AssignmentDialog';
+import LoadingScreen from '../../components/common/LoadingScreen';
 
 // Import API functions
 import {
@@ -74,8 +74,8 @@ import {
   formatDueDate,
   getDueDateStatus,
   getDueDateColor
-} from '../services/assignmentService';
-import { getCourses, Course } from '../services/courseService';
+} from '../../services/assignmentService';
+import { getCourses, Course } from '../../services/courseService';
 
 interface TabPanelProps {
   children?: React.ReactNode;

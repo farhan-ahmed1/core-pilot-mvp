@@ -31,8 +31,8 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { alpha, useTheme } from '@mui/material/styles';
 
 // Import API functions
-import { createAssignment, AssignmentCreate } from '../services/assignmentService';
-import { getCourses, Course } from '../services/courseService';
+import { createAssignment, AssignmentCreate } from '../../services/assignmentService';
+import { getCourses, Course } from '../../services/courseService';
 
 interface AssignmentDialogProps {
   open: boolean;
