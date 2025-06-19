@@ -17,16 +17,19 @@ import {
   useTheme
 } from '@mui/material';
 import {
-  Dashboard as DashboardIcon,
+  SpaceDashboard as DashboardIcon,
   Assignment as AssignmentIcon,
-  School as SchoolIcon,
+  AutoStories as CoursesIcon,
   Person as PersonIcon,
   Analytics as AnalyticsIcon,
-  Settings as SettingsIcon,
-  Notifications as NotificationsIcon,
-  CalendarToday as CalendarIcon,
-  TrendingUp as TrendsIcon,
-  Help as HelpIcon
+  Tune as SettingsIcon,
+  CalendarMonth as CalendarIcon,
+  QuestionMark as HelpIcon,
+  Lightbulb as AIIcon,
+  Edit as EditorIcon,
+  Psychology as AIFeedbackIcon,
+  History as DraftsIcon,
+  Notifications as NotificationsIcon
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -56,7 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const theme = useTheme();
   const { userProfile } = useAuth();
 
-  // Navigation items configuration
+  // Navigation items configuration with modern icons
   const primaryNavItems: NavigationItem[] = [
     {
       id: 'dashboard',
@@ -74,8 +77,15 @@ const Sidebar: React.FC<SidebarProps> = ({
     {
       id: 'courses',
       label: 'Courses',
-      icon: <SchoolIcon />,
+      icon: <CoursesIcon />,
       path: '/courses'
+    },
+    {
+      id: 'editor',
+      label: 'Draft Editor',
+      icon: <EditorIcon />,
+      path: '/editor',
+      disabled: true
     },
     {
       id: 'calendar',
@@ -86,19 +96,43 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   ];
 
-  const secondaryNavItems: NavigationItem[] = [
+  const aiToolsItems: NavigationItem[] = [
+    {
+      id: 'ai-feedback',
+      label: 'AI Feedback',
+      icon: <AIFeedbackIcon />,
+      path: '/ai-feedback',
+      disabled: true
+    },
+    {
+      id: 'drafts',
+      label: 'Draft History',
+      icon: <DraftsIcon />,
+      path: '/drafts',
+      disabled: true
+    },
     {
       id: 'analytics',
-      label: 'Analytics',
+      label: 'Progress Analytics',
       icon: <AnalyticsIcon />,
       path: '/analytics',
       disabled: true
-    },
+    }
+  ];
+
+  const accountItems: NavigationItem[] = [
     {
       id: 'profile',
       label: 'Profile',
       icon: <PersonIcon />,
       path: '/profile'
+    },
+    {
+      id: 'notifications',
+      label: 'Notifications',
+      icon: <NotificationsIcon />,
+      path: '/notifications',
+      disabled: true
     },
     {
       id: 'settings',
@@ -123,34 +157,40 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const renderNavItem = (item: NavigationItem) => (
-    <ListItem key={item.id} disablePadding sx={{ mb: 0.5 }}>
+    <ListItem key={item.id} disablePadding sx={{ mb: 0.25 }}>
       <ListItemButton
         onClick={() => handleNavigation(item.path, item.disabled)}
         disabled={item.disabled}
         sx={{
-          borderRadius: 2,
-          mx: 1,
-          px: 2,
-          py: 1.5,
+          borderRadius: 2.5,
+          mx: 1.5,
+          px: 2.5,
+          py: 1.25,
           transition: 'all 0.2s ease',
-          bgcolor: isActive(item.path) ? 'grey.900' : 'transparent',
-          color: isActive(item.path) ? 'white' : 'text.primary',
+          bgcolor: isActive(item.path) ? alpha(theme.palette.primary.main, 0.12) : 'transparent',
+          color: isActive(item.path) ? 'primary.main' : 'text.primary',
+          border: isActive(item.path) ? 1 : 0,
+          borderColor: isActive(item.path) ? alpha(theme.palette.primary.main, 0.2) : 'transparent',
           '&:hover': {
-            bgcolor: isActive(item.path) ? 'grey.800' : 'grey.100',
-            transform: 'translateX(2px)'
+            bgcolor: isActive(item.path) 
+              ? alpha(theme.palette.primary.main, 0.16) 
+              : alpha(theme.palette.primary.main, 0.04),
+            transform: 'translateX(2px)',
+            boxShadow: `0 2px 8px ${alpha(theme.palette.grey[900], 0.06)}`
           },
           '&.Mui-disabled': {
             opacity: 0.5,
-            color: 'text.disabled'
+            color: 'text.disabled',
+            bgcolor: 'transparent'
           }
         }}
       >
         <ListItemIcon
           sx={{
-            minWidth: 40,
+            minWidth: 36,
             color: 'inherit',
             '& svg': {
-              fontSize: 20
+              fontSize: 18
             }
           }}
         >
@@ -160,9 +200,10 @@ const Sidebar: React.FC<SidebarProps> = ({
               color="error"
               sx={{
                 '& .MuiBadge-badge': {
-                  fontSize: '0.6875rem',
+                  fontSize: '0.625rem',
                   height: 16,
-                  minWidth: 16
+                  minWidth: 16,
+                  fontWeight: 600
                 }
               }}
             >
@@ -177,7 +218,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           primaryTypographyProps={{
             variant: 'body2',
             fontWeight: isActive(item.path) ? 600 : 500,
-            fontSize: '0.875rem'
+            fontSize: '0.8125rem',
+            lineHeight: 1.4
           }}
         />
         {item.disabled && (
@@ -185,10 +227,15 @@ const Sidebar: React.FC<SidebarProps> = ({
             label="Soon"
             size="small"
             sx={{
-              height: 20,
-              fontSize: '0.6875rem',
-              bgcolor: 'grey.200',
-              color: 'text.secondary'
+              height: 18,
+              fontSize: '0.625rem',
+              bgcolor: alpha(theme.palette.grey[400], 0.15),
+              color: 'text.secondary',
+              borderRadius: 1.5,
+              fontWeight: 500,
+              '& .MuiChip-label': {
+                px: 1
+              }
             }}
           />
         )}
@@ -205,9 +252,10 @@ const Sidebar: React.FC<SidebarProps> = ({
         position: 'fixed',
         left: 0,
         top: 0,
-        bgcolor: 'background.paper',
+        bgcolor: alpha('#fafbfc', 0.98),
+        backdropFilter: 'blur(20px)',
         borderRight: 1,
-        borderColor: 'grey.200',
+        borderColor: alpha(theme.palette.grey[300], 0.4),
         display: 'flex',
         flexDirection: 'column',
         transform: open ? 'translateX(0)' : 'translateX(-100%)',
@@ -215,47 +263,64 @@ const Sidebar: React.FC<SidebarProps> = ({
         zIndex: theme.zIndex.drawer,
         // Enhanced mobile overlay styling
         ...(theme.breakpoints.down('lg') && {
-          boxShadow: open ? theme.shadows[16] : 'none',
-          backdropFilter: 'blur(8px)',
+          boxShadow: open ? theme.shadows[24] : 'none',
+          bgcolor: theme.palette.background.paper,
         })
       }}
     >
       {/* Sidebar Header */}
-      <Box sx={{ p: 3, borderBottom: 1, borderColor: 'grey.200' }}>
+      <Box sx={{ 
+        p: 2.5, 
+        borderBottom: 1, 
+        borderColor: alpha(theme.palette.grey[300], 0.4),
+        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.015)}, ${alpha('#f8f9fa', 0.6)})`
+      }}>
         <Box display="flex" alignItems="center" gap={2}>
           <Box
             sx={{
               width: 36,
               height: 36,
-              borderRadius: 2,
-              bgcolor: 'grey.900',
+              borderRadius: 2.5,
+              bgcolor: 'primary.main',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              boxShadow: `0 3px 8px ${alpha(theme.palette.primary.main, 0.2)}`
             }}
           >
-            <SchoolIcon sx={{ color: 'white', fontSize: 20 }} />
+            <AIIcon sx={{ color: 'white', fontSize: 20 }} />
           </Box>
           <Box>
-            <Typography variant="h6" fontWeight="600" sx={{ lineHeight: 1.2 }}>
+            <Typography variant="h6" fontWeight="700" sx={{ lineHeight: 1.2, fontSize: '1rem' }}>
               Core Pilot
             </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Academic Dashboard
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6875rem', fontWeight: 500 }}>
+              AI Academic Assistant
             </Typography>
           </Box>
         </Box>
       </Box>
 
       {/* Main Navigation */}
-      <Box sx={{ flex: 1, overflow: 'auto', py: 3 }}>
+      <Box sx={{ 
+        flex: 1, 
+        overflow: 'auto', 
+        py: 2,
+        background: `linear-gradient(180deg, ${alpha('#f0f4f8', 0.2)}, transparent 50%)`
+      }}>
         {/* Primary Navigation */}
         <Box sx={{ mb: 3 }}>
           <Typography 
-            variant="caption" 
+            variant="overline" 
             color="text.secondary" 
-            fontWeight="600"
-            sx={{ px: 3, mb: 1, display: 'block', textTransform: 'uppercase', letterSpacing: 1 }}
+            fontWeight="700"
+            sx={{ 
+              px: 2.5, 
+              mb: 1.5, 
+              display: 'block', 
+              letterSpacing: 1,
+              fontSize: '0.625rem'
+            }}
           >
             Main
           </Typography>
@@ -264,50 +329,160 @@ const Sidebar: React.FC<SidebarProps> = ({
           </List>
         </Box>
 
-        <Divider sx={{ mx: 2, mb: 3 }} />
+        <Divider sx={{ mx: 2.5, mb: 3, borderColor: alpha(theme.palette.grey[300], 0.5) }} />
 
-        {/* Secondary Navigation */}
-        <Box>
+        {/* AI Tools Section */}
+        <Box sx={{ mb: 3 }}>
           <Typography 
-            variant="caption" 
+            variant="overline" 
             color="text.secondary" 
-            fontWeight="600"
-            sx={{ px: 3, mb: 1, display: 'block', textTransform: 'uppercase', letterSpacing: 1 }}
+            fontWeight="700"
+            sx={{ 
+              px: 2.5, 
+              mb: 1.5, 
+              display: 'block', 
+              letterSpacing: 1,
+              fontSize: '0.625rem'
+            }}
           >
-            Tools
+            AI Tools
           </Typography>
           <List disablePadding>
-            {secondaryNavItems.map(renderNavItem)}
+            {aiToolsItems.map(renderNavItem)}
+          </List>
+        </Box>
+
+        <Divider sx={{ mx: 2.5, mb: 3, borderColor: alpha(theme.palette.grey[300], 0.5) }} />
+
+        {/* Account Section */}
+        <Box>
+          <Typography 
+            variant="overline" 
+            color="text.secondary" 
+            fontWeight="700"
+            sx={{ 
+              px: 2.5, 
+              mb: 1.5, 
+              display: 'block', 
+              letterSpacing: 1,
+              fontSize: '0.625rem'
+            }}
+          >
+            Account
+          </Typography>
+          <List disablePadding>
+            {accountItems.map(renderNavItem)}
           </List>
         </Box>
       </Box>
 
-      {/* Sidebar Footer */}
-      <Box sx={{ p: 3, borderTop: 1, borderColor: 'grey.200' }}>
-        <Stack spacing={1}>
-          <ListItemButton
+      {/* Enhanced User Profile Footer */}
+      <Box sx={{ 
+        p: 2.5, 
+        borderTop: 1, 
+        borderColor: alpha(theme.palette.grey[300], 0.4),
+        background: `linear-gradient(135deg, ${alpha('#f0f4f8', 0.6)}, ${alpha(theme.palette.background.paper, 0.8)})`
+      }}>
+        {userProfile ? (
+          <Box
             sx={{
-              borderRadius: 2,
-              px: 2,
-              py: 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+              p: 1.5,
+              borderRadius: 2.5,
+              bgcolor: alpha(theme.palette.background.paper, 0.7),
+              border: 1,
+              borderColor: alpha(theme.palette.grey[300], 0.25),
+              mb: 1.5,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
               '&:hover': {
-                bgcolor: 'grey.100'
+                bgcolor: alpha(theme.palette.primary.main, 0.03),
+                borderColor: alpha(theme.palette.primary.main, 0.15),
+                transform: 'translateY(-0.5px)',
+                boxShadow: `0 3px 8px ${alpha(theme.palette.grey[900], 0.06)}`
               }
             }}
+            onClick={() => navigate('/profile')}
           >
-            <ListItemIcon sx={{ minWidth: 32 }}>
-              <HelpIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-            </ListItemIcon>
-            <ListItemText
-              primary="Help & Support"
-              primaryTypographyProps={{
-                variant: 'body2',
-                color: 'text.secondary',
-                fontSize: '0.8125rem'
+            <Avatar
+              src={userProfile.photo_url}
+              sx={{
+                width: 32,
+                height: 32,
+                bgcolor: 'primary.main',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                border: 1.5,
+                borderColor: 'background.paper',
+                boxShadow: `0 2px 6px ${alpha(theme.palette.grey[900], 0.1)}`
               }}
-            />
-          </ListItemButton>
-        </Stack>
+            >
+              {userProfile.full_name?.split(' ').map(n => n[0]).join('') || 'CP'}
+            </Avatar>
+            <Box flex={1} sx={{ minWidth: 0 }}>
+              <Typography 
+                variant="body2" 
+                fontWeight="600" 
+                sx={{ 
+                  fontSize: '0.75rem',
+                  lineHeight: 1.2,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {userProfile.full_name}
+              </Typography>
+              <Typography 
+                variant="caption" 
+                color="text.secondary" 
+                sx={{ 
+                  fontSize: '0.625rem',
+                  fontWeight: 500,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  display: 'block'
+                }}
+              >
+                {userProfile.email}
+              </Typography>
+            </Box>
+          </Box>
+        ) : null}
+        
+        <ListItemButton
+          sx={{
+            borderRadius: 2.5,
+            px: 1.5,
+            py: 1,
+            bgcolor: alpha(theme.palette.background.paper, 0.5),
+            border: 1,
+            borderColor: alpha(theme.palette.grey[300], 0.25),
+            '&:hover': {
+              bgcolor: alpha(theme.palette.warning.main, 0.06),
+              borderColor: alpha(theme.palette.warning.main, 0.15),
+              '& .MuiListItemIcon-root': {
+                color: 'warning.main'
+              }
+            }
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 32 }}>
+            <HelpIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+          </ListItemIcon>
+          <ListItemText
+            primary="Help & Support"
+            primaryTypographyProps={{
+              variant: 'body2',
+              color: 'text.secondary',
+              fontSize: '0.75rem',
+              fontWeight: 500
+            }}
+          />
+        </ListItemButton>
       </Box>
     </Paper>
   );

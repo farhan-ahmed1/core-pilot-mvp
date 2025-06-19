@@ -2,7 +2,7 @@ import React from 'react';
 import { Grid, Fade } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import CourseCard from './CourseCard';
-import { Course } from '../services/courseService';
+import { Course } from '../../services/courseService';
 
 interface Assignment {
   id: number;

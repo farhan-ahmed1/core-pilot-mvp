@@ -1,195 +1,135 @@
 import React from 'react';
 import {
-  Box,
-  Typography,
+  Grid,
   Card,
   CardContent,
-  Grid,
-  Avatar,
-  Paper,
+  Box,
+  Typography,
+  Skeleton,
   Fade,
+  useTheme
 } from '@mui/material';
 import {
-  Assignment as AssignmentIcon,
+  CheckCircle as CheckCircleIcon,
+  AccessTime as AccessTimeIcon,
   TrendingUp as TrendingUpIcon,
-  School as SchoolIcon,
-  Rocket as RocketIcon,
+  TrackChanges as TargetIcon,
 } from '@mui/icons-material';
-import { alpha, useTheme } from '@mui/material/styles';
+import type { AssignmentStats } from '../../services/assignmentService';
 
 interface DashboardStatsProps {
-  totalCourses: number;
-  totalAssignments: number;
-  completedAssignments: number;
-  completionRate: number;
+  stats: AssignmentStats | null;
+  loading: boolean;
 }
 
-const DashboardStats: React.FC<DashboardStatsProps> = ({
-  totalCourses,
-  totalAssignments,
-  completedAssignments,
-  completionRate,
-}) => {
+const DashboardStats: React.FC<DashboardStatsProps> = ({ stats, loading }) => {
   const theme = useTheme();
 
-  const statsCards = [
-    {
-      title: 'Active Courses',
-      value: totalCourses,
-      icon: <SchoolIcon />,
-      color: theme.palette.primary.main,
-      bgColor: alpha(theme.palette.primary.main, 0.1),
-    },
+  if (loading || !stats) {
+    return (
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        {[1, 2, 3, 4].map((item) => (
+          <Grid size={{ xs: 12, sm: 6, md: 3 }} key={item}>
+            <Card sx={{ p: 3, border: 1, borderColor: 'grey.200', borderRadius: 3 }}>
+              <Skeleton variant="rectangular" height={60} />
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+    );
+  }
+
+  // Safe access to stats properties with fallback values
+  const totalAssignments = stats.total_assignments || 0;
+  const overdue = stats.overdue || 0;
+  const dueSoon = stats.due_soon || 0;
+  const upcoming = stats.upcoming || 0;
+  const completed = totalAssignments - overdue - dueSoon - upcoming;
+  const completionRate = totalAssignments > 0 
+    ? Math.round((completed / totalAssignments) * 100) 
+    : 0;
+
+  const statCards = [
     {
       title: 'Total Assignments',
       value: totalAssignments,
-      icon: <AssignmentIcon />,
-      color: theme.palette.secondary.main,
-      bgColor: alpha(theme.palette.secondary.main, 0.1),
+      icon: <TargetIcon />,
+      bgColor: 'grey.100',
+      iconColor: 'grey.600',
     },
     {
       title: 'Completed',
-      value: completedAssignments,
-      icon: <TrendingUpIcon />,
-      color: theme.palette.success.main,
-      bgColor: alpha(theme.palette.success.main, 0.1),
+      value: completed,
+      icon: <CheckCircleIcon />,
+      bgColor: 'success.50',
+      iconColor: 'success.600',
+    },
+    {
+      title: 'Due Soon',
+      value: dueSoon,
+      icon: <AccessTimeIcon />,
+      bgColor: 'warning.50',
+      iconColor: 'warning.600',
     },
     {
       title: 'Completion Rate',
-      value: `${Math.round(completionRate)}%`,
+      value: completionRate,
+      suffix: '%',
       icon: <TrendingUpIcon />,
-      color: theme.palette.info.main,
-      bgColor: alpha(theme.palette.info.main, 0.1),
-    },
+      bgColor: 'primary.50',
+      iconColor: 'primary.600',
+    }
   ];
 
   return (
-    <Fade in timeout={800}>
-      <Paper
-        elevation={0}
-        sx={{
-          p: 4,
-          mb: 4,
-          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-          color: 'white',
-          borderRadius: 4,
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        <Box sx={{ position: 'relative', zIndex: 1 }}>
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            mb={3}
-          >
-            <Box>
-              <Typography
-                variant="h3"
-                component="h1"
-                fontWeight="800"
-                gutterBottom
-              >
-                Welcome to Your Learning Hub
-              </Typography>
-              <Typography
-                variant="h6"
-                sx={{ opacity: 0.9, fontWeight: 400 }}
-              >
-                Track your progress, manage assignments, and excel in your courses
-              </Typography>
-            </Box>
-            <Avatar
+    <Grid container spacing={3} sx={{ mb: 4 }}>
+      {statCards.map((stat, index) => (
+        <Grid size={{ xs: 12, sm: 6, md: 3 }} key={stat.title}>
+          <Fade in timeout={400 + (index * 100)}>
+            <Card
+              elevation={0}
               sx={{
-                width: 80,
-                height: 80,
-                bgcolor: alpha('#fff', 0.2),
-                border: `3px solid ${alpha('#fff', 0.3)}`,
+                border: 1,
+                borderColor: 'grey.200',
+                borderRadius: 3,
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  boxShadow: theme.shadows[2]
+                }
               }}
             >
-              <RocketIcon sx={{ fontSize: 40 }} />
-            </Avatar>
-          </Box>
-
-          <Grid container spacing={3}>
-            {statsCards.map((stat) => (
-              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={stat.title}>
-                <Card
-                  sx={{
-                    bgcolor: alpha('#fff', 0.1),
-                    backdropFilter: 'blur(10px)',
-                    border: `1px solid ${alpha('#fff', 0.2)}`,
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      bgcolor: alpha('#fff', 0.15),
-                    },
-                  }}
-                >
-                  <CardContent sx={{ textAlign: 'center', py: 3 }}>
-                    <Box
-                      sx={{
-                        width: 60,
-                        height: 60,
-                        borderRadius: '50%',
-                        bgcolor: alpha('#fff', 0.2),
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        mx: 'auto',
-                        mb: 2,
-                      }}
-                    >
-                      {React.cloneElement(stat.icon, {
-                        sx: { fontSize: 30, color: 'white' },
-                      })}
-                    </Box>
-                    <Typography
-                      variant="h4"
-                      component="div"
-                      fontWeight="700"
-                      gutterBottom
-                    >
-                      {stat.value}
-                    </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.8 }}>
+              <CardContent sx={{ p: 3 }}>
+                <Box display="flex" alignItems="center" justifyContent="space-between">
+                  <Box>
+                    <Typography variant="caption" fontWeight="500" color="text.secondary" gutterBottom>
                       {stat.title}
                     </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-
-        {/* Background decorative elements */}
-        <Box
-          sx={{
-            position: 'absolute',
-            top: -50,
-            right: -50,
-            width: 200,
-            height: 200,
-            borderRadius: '50%',
-            bgcolor: alpha('#fff', 0.05),
-            zIndex: 0,
-          }}
-        />
-        <Box
-          sx={{
-            position: 'absolute',
-            bottom: -30,
-            left: -30,
-            width: 150,
-            height: 150,
-            borderRadius: '50%',
-            bgcolor: alpha('#fff', 0.05),
-            zIndex: 0,
-          }}
-        />
-      </Paper>
-    </Fade>
+                    <Typography variant="h4" fontWeight="600" color="text.primary">
+                      {stat.value}{stat.suffix || ''}
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 2,
+                      bgcolor: stat.bgColor,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    {React.cloneElement(stat.icon, { 
+                      sx: { fontSize: 24, color: stat.iconColor } 
+                    })}
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Fade>
+        </Grid>
+      ))}
+    </Grid>
   );
 };
 
