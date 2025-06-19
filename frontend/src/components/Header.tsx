@@ -1,452 +1,328 @@
 import React, { useState } from 'react';
-import { 
+import {
   AppBar,
   Toolbar,
   Typography,
-  Box,
   Button,
   IconButton,
+  Avatar,
   Menu,
   MenuItem,
-  Avatar,
+  Box,
+  Chip,
   Divider,
+  ListItemIcon,
   Badge,
-  Chip
+  alpha,
+  useTheme
 } from '@mui/material';
-import { 
-  AccountCircle as AccountCircleIcon,
-  Menu as MenuIcon,
+import {
+  Person as PersonIcon,
+  Settings as SettingsIcon,
+  Logout as LogoutIcon,
   Dashboard as DashboardIcon,
   Assignment as AssignmentIcon,
-  Person as PersonIcon,
-  Logout as LogoutIcon,
-  Notifications as NotificationsIcon,
-  RocketLaunch as RocketIcon,
-  Settings as SettingsIcon
+  School as SchoolIcon,
+  Notifications as NotificationsIcon
 } from '@mui/icons-material';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { alpha, useTheme } from '@mui/material/styles';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 interface HeaderProps {
   title?: string;
 }
 
 const Header: React.FC<HeaderProps> = ({ title = 'Core Pilot' }) => {
+  const { userProfile, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [mobileMenuAnchorEl, setMobileMenuAnchorEl] = useState<null | HTMLElement>(null);
-  const [notificationAnchorEl, setNotificationAnchorEl] = useState<null | HTMLElement>(null);
-  
-  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
 
-  const handleNotificationMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setNotificationAnchorEl(event.currentTarget);
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
   };
 
   const handleMenuClose = () => {
     setAnchorEl(null);
-    setMobileMenuAnchorEl(null);
-    setNotificationAnchorEl(null);
   };
 
-  const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setMobileMenuAnchorEl(event.currentTarget);
-  };
-
-  const handleNavigate = (path: string) => {
-    navigate(path);
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/login');
+    } catch (error) {
+      console.error('Sign out failed:', error);
+    }
     handleMenuClose();
   };
 
-  const isActivePage = (path: string) => {
-    return location.pathname === path || location.pathname.startsWith(path);
+  const navigateToProfile = () => {
+    navigate('/profile');
+    handleMenuClose();
+  };
+
+  const navigateToDashboard = () => {
+    navigate('/dashboard');
+    handleMenuClose();
+  };
+
+  const navigateToAssignments = () => {
+    navigate('/assignments');
+    handleMenuClose();
+  };
+
+  const getPageTitle = () => {
+    const path = location.pathname;
+    if (path === '/dashboard') return 'Dashboard';
+    if (path === '/assignments') return 'Assignments';
+    if (path.startsWith('/assignments/')) return 'Assignment Details';
+    if (path === '/profile') return 'Profile';
+    return title;
+  };
+
+  const getActiveNavItem = () => {
+    const path = location.pathname;
+    if (path === '/dashboard') return 'dashboard';
+    if (path.startsWith('/assignments')) return 'assignments';
+    if (path === '/profile') return 'profile';
+    return 'dashboard';
   };
 
   return (
     <AppBar 
-      position="static" 
+      position="sticky" 
       elevation={0}
-      sx={{
-        background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-        backdropFilter: 'blur(20px)',
-        borderBottom: `1px solid ${alpha('#fff', 0.1)}`
+      sx={{ 
+        bgcolor: 'background.paper',
+        borderBottom: 1,
+        borderColor: 'divider',
+        color: 'text.primary'
       }}
     >
-      <Toolbar sx={{ minHeight: 72 }}>
-        {/* Logo/Title with enhanced styling */}
-        <Box
-          component={Link}
-          to="/dashboard"
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            textDecoration: 'none',
-            color: 'inherit',
-            mr: 4,
-            flexGrow: { xs: 1, md: 0 }
-          }}
+      <Toolbar sx={{ px: { xs: 2, md: 4 }, py: 1 }}>
+        {/* Logo and Brand */}
+        <Box 
+          display="flex" 
+          alignItems="center" 
+          sx={{ cursor: 'pointer' }}
+          onClick={() => navigate('/dashboard')}
         >
-          <Avatar
+          <Box
             sx={{
-              mr: 2,
-              bgcolor: alpha('#fff', 0.15),
               width: 40,
               height: 40,
-              border: `2px solid ${alpha('#fff', 0.2)}`
+              borderRadius: 2,
+              background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mr: 2
             }}
           >
-            <RocketIcon sx={{ color: 'white' }} />
-          </Avatar>
+            <SchoolIcon sx={{ color: 'white', fontSize: 24 }} />
+          </Box>
           <Box>
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 800,
-                fontSize: '1.4rem',
-                lineHeight: 1.2,
-                background: 'linear-gradient(45deg, #fff 30%, rgba(255,255,255,0.8) 90%)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent'
-              }}
-            >
-              {title}
+            <Typography variant="h6" fontWeight="800" sx={{ lineHeight: 1 }}>
+              Core Pilot
             </Typography>
-            <Typography
-              variant="caption"
-              sx={{
-                color: alpha('#fff', 0.7),
-                fontWeight: 500,
-                fontSize: '0.75rem'
-              }}
-            >
-              Learning Management System
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+              AI-Enhanced Learning
             </Typography>
           </Box>
         </Box>
 
-        {/* Desktop Navigation with enhanced styling */}
-        <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, gap: 1 }}>
+        {/* Page Title */}
+        <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', ml: 4 }}>
+          <Typography variant="h5" fontWeight="700" color="text.primary">
+            {getPageTitle()}
+          </Typography>
+        </Box>
+
+        {/* Navigation Pills */}
+        <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1, mr: 3 }}>
           <Button
-            onClick={() => handleNavigate('/dashboard')}
+            onClick={navigateToDashboard}
             startIcon={<DashboardIcon />}
+            variant={getActiveNavItem() === 'dashboard' ? 'contained' : 'text'}
             sx={{
-              color: 'white',
+              borderRadius: 3,
               textTransform: 'none',
               fontWeight: 600,
               px: 3,
-              py: 1.5,
-              borderRadius: 3,
-              bgcolor: isActivePage('/dashboard') ? alpha('#fff', 0.15) : 'transparent',
-              backdropFilter: isActivePage('/dashboard') ? 'blur(10px)' : 'none',
-              border: isActivePage('/dashboard') ? `1px solid ${alpha('#fff', 0.2)}` : 'none',
-              '&:hover': {
-                bgcolor: alpha('#fff', 0.1),
-                backdropFilter: 'blur(10px)',
-                border: `1px solid ${alpha('#fff', 0.15)}`
-              }
+              ...(getActiveNavItem() === 'dashboard' && {
+                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
+              })
             }}
           >
             Dashboard
           </Button>
           <Button
-            onClick={() => handleNavigate('/assignments')}
+            onClick={navigateToAssignments}
             startIcon={<AssignmentIcon />}
+            variant={getActiveNavItem() === 'assignments' ? 'contained' : 'text'}
             sx={{
-              color: 'white',
+              borderRadius: 3,
               textTransform: 'none',
               fontWeight: 600,
               px: 3,
-              py: 1.5,
-              borderRadius: 3,
-              bgcolor: isActivePage('/assignments') ? alpha('#fff', 0.15) : 'transparent',
-              backdropFilter: isActivePage('/assignments') ? 'blur(10px)' : 'none',
-              border: isActivePage('/assignments') ? `1px solid ${alpha('#fff', 0.2)}` : 'none',
-              '&:hover': {
-                bgcolor: alpha('#fff', 0.1),
-                backdropFilter: 'blur(10px)',
-                border: `1px solid ${alpha('#fff', 0.15)}`
-              }
+              ...(getActiveNavItem() === 'assignments' && {
+                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
+              })
             }}
           >
             Assignments
           </Button>
         </Box>
 
-        {/* Action buttons */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        {/* User Profile Section */}
+        <Box display="flex" alignItems="center" gap={2}>
           {/* Notifications */}
           <IconButton
-            size="large"
-            aria-label="notifications"
-            onClick={handleNotificationMenuOpen}
             sx={{
-              color: 'white',
-              bgcolor: alpha('#fff', 0.1),
-              borderRadius: 2,
+              bgcolor: alpha(theme.palette.primary.main, 0.1),
               '&:hover': {
-                bgcolor: alpha('#fff', 0.15)
+                bgcolor: alpha(theme.palette.primary.main, 0.2)
               }
             }}
           >
-            <Badge badgeContent={3} color="error">
+            <Badge badgeContent={0} color="error">
               <NotificationsIcon />
             </Badge>
           </IconButton>
 
-          {/* Mobile menu icon */}
-          <IconButton
-            size="large"
-            aria-label="mobile menu"
-            onClick={handleMobileMenuOpen}
-            sx={{
-              color: 'white',
-              display: { xs: 'flex', md: 'none' },
-              bgcolor: alpha('#fff', 0.1),
-              borderRadius: 2,
-              '&:hover': {
-                bgcolor: alpha('#fff', 0.15)
-              }
-            }}
-          >
-            <MenuIcon />
-          </IconButton>
-          
-          {/* Profile section with enhanced avatar */}
-          <IconButton
-            size="large"
-            edge="end"
-            aria-label="account menu"
-            onClick={handleProfileMenuOpen}
-            sx={{
-              ml: 1,
-              p: 0
-            }}
-          >
-            <Avatar 
-              sx={{ 
-                width: 44, 
-                height: 44,
-                bgcolor: alpha('#fff', 0.15),
-                border: `2px solid ${alpha('#fff', 0.2)}`,
+          {/* User Menu */}
+          <Box display="flex" alignItems="center" gap={2}>
+            {userProfile && (
+              <Box sx={{ display: { xs: 'none', md: 'block' }, textAlign: 'right' }}>
+                <Typography variant="body2" fontWeight="600">
+                  {userProfile.full_name}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {userProfile.email}
+                </Typography>
+              </Box>
+            )}
+            
+            <IconButton
+              onClick={handleMenuOpen}
+              sx={{
+                p: 0,
+                border: 2,
+                borderColor: alpha(theme.palette.primary.main, 0.2),
                 '&:hover': {
-                  border: `2px solid ${alpha('#fff', 0.4)}`,
-                  transform: 'scale(1.05)'
-                },
-                transition: 'all 0.2s ease-in-out'
+                  borderColor: theme.palette.primary.main
+                }
               }}
             >
-              <AccountCircleIcon sx={{ color: 'white' }} />
-            </Avatar>
-          </IconButton>
+              <Avatar
+                src={userProfile?.photo_url}
+                sx={{
+                  width: 40,
+                  height: 40,
+                  bgcolor: theme.palette.primary.main
+                }}
+              >
+                {userProfile?.full_name?.charAt(0) || <PersonIcon />}
+              </Avatar>
+            </IconButton>
+          </Box>
         </Box>
 
-        {/* Enhanced Profile Menu */}
+        {/* User Menu Dropdown */}
         <Menu
           anchorEl={anchorEl}
-          id="account-menu"
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
           PaperProps={{
-            elevation: 12,
+            elevation: 8,
             sx: {
-              overflow: 'visible',
-              filter: 'drop-shadow(0px 4px 16px rgba(0,0,0,0.2))',
-              mt: 1.5,
               borderRadius: 3,
-              minWidth: 240,
-              background: 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)',
-              '&:before': {
-                content: '""',
-                display: 'block',
-                position: 'absolute',
-                top: 0,
-                right: 14,
-                width: 10,
-                height: 10,
-                bgcolor: 'background.paper',
-                transform: 'translateY(-50%) rotate(45deg)',
-                zIndex: 0,
-              },
-            },
+              minWidth: 280,
+              mt: 1,
+              '& .MuiMenuItem-root': {
+                borderRadius: 1,
+                mx: 1,
+                my: 0.5,
+                px: 2,
+                py: 1.5
+              }
+            }
           }}
           transformOrigin={{ horizontal: 'right', vertical: 'top' }}
           anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         >
           {/* User Info Header */}
-          <Box sx={{ px: 3, py: 2, borderBottom: 1, borderColor: 'divider' }}>
-            <Box display="flex" alignItems="center" gap={2}>
-              <Avatar sx={{ width: 40, height: 40, bgcolor: 'primary.main' }}>
-                <PersonIcon />
-              </Avatar>
-              <Box>
-                <Typography variant="subtitle1" fontWeight="bold">
-                  John Doe
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  john.doe@example.com
-                </Typography>
+          {userProfile && (
+            <Box sx={{ p: 2, pb: 1 }}>
+              <Box display="flex" alignItems="center" gap={2} mb={1}>
+                <Avatar
+                  src={userProfile.photo_url}
+                  sx={{ width: 48, height: 48, bgcolor: theme.palette.primary.main }}
+                >
+                  {userProfile.full_name?.charAt(0)}
+                </Avatar>
+                <Box flex={1}>
+                  <Typography variant="body1" fontWeight="600">
+                    {userProfile.full_name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {userProfile.email}
+                  </Typography>
+                </Box>
+              </Box>
+              
+              {/* User Stats */}
+              <Box display="flex" gap={1} mt={2}>
+                <Chip
+                  label={`${userProfile.courses_count || 0} Courses`}
+                  size="small"
+                  variant="outlined"
+                  sx={{ borderRadius: 2 }}
+                />
+                <Chip
+                  label={`${userProfile.assignments_count || 0} Assignments`}
+                  size="small"
+                  variant="outlined"
+                  sx={{ borderRadius: 2 }}
+                />
               </Box>
             </Box>
-          </Box>
+          )}
+          
+          <Divider sx={{ my: 1 }} />
 
-          <MenuItem 
-            onClick={() => handleNavigate('/profile')}
-            sx={{ 
-              borderRadius: 2, 
-              mx: 1, 
-              my: 0.5,
-              '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.08) }
-            }}
-          >
-            <PersonIcon sx={{ mr: 2, color: 'primary.main' }} /> 
-            <Box>
-              <Typography variant="body2" fontWeight={600}>Profile</Typography>
-              <Typography variant="caption" color="text.secondary">Manage your account</Typography>
-            </Box>
-          </MenuItem>
-          
-          <MenuItem 
-            onClick={() => handleNavigate('/settings')}
-            sx={{ 
-              borderRadius: 2, 
-              mx: 1, 
-              my: 0.5,
-              '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.08) }
-            }}
-          >
-            <SettingsIcon sx={{ mr: 2, color: 'primary.main' }} /> 
-            <Box>
-              <Typography variant="body2" fontWeight={600}>Settings</Typography>
-              <Typography variant="caption" color="text.secondary">Preferences & configuration</Typography>
-            </Box>
-          </MenuItem>
-          
-          <Divider sx={{ mx: 1, my: 1 }} />
-          
-          <MenuItem 
-            onClick={() => handleNavigate('/login')}
-            sx={{ 
-              borderRadius: 2, 
-              mx: 1, 
-              my: 0.5,
-              color: 'error.main',
-              '&:hover': { bgcolor: alpha(theme.palette.error.main, 0.08) }
-            }}
-          >
-            <LogoutIcon sx={{ mr: 2 }} /> 
-            <Box>
-              <Typography variant="body2" fontWeight={600}>Sign Out</Typography>
-              <Typography variant="caption" color="text.secondary">Logout from your account</Typography>
-            </Box>
-          </MenuItem>
-        </Menu>
-
-        {/* Notifications Menu */}
-        <Menu
-          anchorEl={notificationAnchorEl}
-          open={Boolean(notificationAnchorEl)}
-          onClose={handleMenuClose}
-          PaperProps={{
-            elevation: 12,
-            sx: {
-              borderRadius: 3,
-              minWidth: 320,
-              maxWidth: 400,
-              filter: 'drop-shadow(0px 4px 16px rgba(0,0,0,0.2))',
-            },
-          }}
-        >
-          <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-            <Typography variant="h6" fontWeight="bold">
-              Notifications
-            </Typography>
-          </Box>
-          <Box sx={{ maxHeight: 300, overflow: 'auto' }}>
-            <MenuItem sx={{ borderRadius: 2, mx: 1, my: 0.5 }}>
-              <Box sx={{ width: '100%' }}>
-                <Typography variant="body2" fontWeight={600}>
-                  Assignment Due Tomorrow
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  "Data Structures Project" is due in 24 hours
-                </Typography>
-                <Chip label="Due Soon" color="warning" size="small" sx={{ mt: 1 }} />
-              </Box>
+          {/* Navigation Items (Mobile) */}
+          <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+            <MenuItem onClick={navigateToDashboard}>
+              <ListItemIcon>
+                <DashboardIcon fontSize="small" />
+              </ListItemIcon>
+              Dashboard
             </MenuItem>
-            <MenuItem sx={{ borderRadius: 2, mx: 1, my: 0.5 }}>
-              <Box sx={{ width: '100%' }}>
-                <Typography variant="body2" fontWeight={600}>
-                  New Course Added
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  "Advanced Algorithms" has been added to your courses
-                </Typography>
-                <Chip label="New" color="primary" size="small" sx={{ mt: 1 }} />
-              </Box>
+            <MenuItem onClick={navigateToAssignments}>
+              <ListItemIcon>
+                <AssignmentIcon fontSize="small" />
+              </ListItemIcon>
+              Assignments
             </MenuItem>
+            <Divider sx={{ my: 1 }} />
           </Box>
-        </Menu>
 
-        {/* Enhanced Mobile Menu */}
-        <Menu
-          anchorEl={mobileMenuAnchorEl}
-          id="mobile-menu"
-          keepMounted
-          open={Boolean(mobileMenuAnchorEl)}
-          onClose={handleMenuClose}
-          PaperProps={{
-            elevation: 12,
-            sx: {
-              borderRadius: 3,
-              minWidth: 280,
-              filter: 'drop-shadow(0px 4px 16px rgba(0,0,0,0.2))',
-            },
-          }}
-          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-        >
-          <MenuItem 
-            onClick={() => handleNavigate('/dashboard')}
-            sx={{ 
-              borderRadius: 2, 
-              mx: 1, 
-              my: 0.5,
-              bgcolor: isActivePage('/dashboard') ? alpha(theme.palette.primary.main, 0.08) : 'transparent'
-            }}
-          >
-            <DashboardIcon sx={{ mr: 2, color: 'primary.main' }} /> 
-            Dashboard
+          {/* Profile Actions */}
+          <MenuItem onClick={navigateToProfile}>
+            <ListItemIcon>
+              <PersonIcon fontSize="small" />
+            </ListItemIcon>
+            Profile Settings
           </MenuItem>
-          <MenuItem 
-            onClick={() => handleNavigate('/assignments')}
-            sx={{ 
-              borderRadius: 2, 
-              mx: 1, 
-              my: 0.5,
-              bgcolor: isActivePage('/assignments') ? alpha(theme.palette.primary.main, 0.08) : 'transparent'
-            }}
-          >
-            <AssignmentIcon sx={{ mr: 2, color: 'primary.main' }} /> 
-            Assignments
-          </MenuItem>
-          <Divider sx={{ mx: 1, my: 1 }} />
-          <MenuItem 
-            onClick={() => handleNavigate('/profile')}
-            sx={{ borderRadius: 2, mx: 1, my: 0.5 }}
-          >
-            <PersonIcon sx={{ mr: 2, color: 'primary.main' }} /> 
-            Profile
-          </MenuItem>
-          <MenuItem 
-            onClick={() => handleNavigate('/login')}
-            sx={{ borderRadius: 2, mx: 1, my: 0.5, color: 'error.main' }}
-          >
-            <LogoutIcon sx={{ mr: 2 }} /> 
+          
+          <MenuItem onClick={handleSignOut} sx={{ color: 'error.main' }}>
+            <ListItemIcon>
+              <LogoutIcon fontSize="small" sx={{ color: 'error.main' }} />
+            </ListItemIcon>
             Sign Out
           </MenuItem>
         </Menu>

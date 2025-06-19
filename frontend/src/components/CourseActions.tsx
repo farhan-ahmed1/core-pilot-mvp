@@ -2,10 +2,12 @@ import React from 'react';
 import {
   Menu,
   MenuItem,
-  Fab,
-  Zoom,
   Snackbar,
-  Alert
+  Alert,
+  ListItemIcon,
+  Typography,
+  Fab,
+  Zoom
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -58,7 +60,7 @@ const CourseActions: React.FC<CourseActionsProps> = ({
         </Fab>
       </Zoom>
 
-      {/* Course Menu */}
+      {/* Course Actions Menu */}
       <Menu
         anchorEl={menuAnchorEl}
         open={Boolean(menuAnchorEl)}
@@ -71,35 +73,45 @@ const CourseActions: React.FC<CourseActionsProps> = ({
             '& .MuiMenuItem-root': {
               borderRadius: 1,
               mx: 1,
-              my: 0.5
+              my: 0.5,
+              px: 2,
+              py: 1.5
             }
           }
         }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
         <MenuItem onClick={onEditCourse}>
-          <EditIcon sx={{ mr: 1 }} />
-          Edit Course
+          <ListItemIcon>
+            <EditIcon fontSize="small" />
+          </ListItemIcon>
+          <Typography variant="body2" fontWeight={600}>
+            Edit Course
+          </Typography>
         </MenuItem>
-        <MenuItem 
-          onClick={onDeleteCourse}
-          sx={{ color: 'error.main' }}
-        >
-          <DeleteIcon sx={{ mr: 1 }} />
-          Delete Course
+        <MenuItem onClick={onDeleteCourse} sx={{ color: 'error.main' }}>
+          <ListItemIcon>
+            <DeleteIcon fontSize="small" sx={{ color: 'error.main' }} />
+          </ListItemIcon>
+          <Typography variant="body2" fontWeight={600}>
+            Delete Course
+          </Typography>
         </MenuItem>
       </Menu>
 
-      {/* Snackbar for notifications */}
+      {/* Success/Error Snackbar */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
         onClose={onSnackbarClose}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       >
-        <Alert 
-          onClose={onSnackbarClose} 
+        <Alert
+          onClose={onSnackbarClose}
           severity={snackbar.severity}
-          sx={{ width: '100%', borderRadius: 3 }}
+          variant="filled"
+          sx={{ borderRadius: 3 }}
         >
           {snackbar.message}
         </Alert>

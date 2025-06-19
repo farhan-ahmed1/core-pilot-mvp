@@ -14,7 +14,8 @@ import {
   Alert,
   Chip,
   Stack,
-  Avatar
+  Avatar,
+  CircularProgress
 } from '@mui/material';
 import {
   LibraryBooks as AssignmentIcon,
@@ -23,7 +24,8 @@ import {
   Description as DescriptionIcon,
   Close as CloseIcon,
   Save as SaveIcon,
-  NoteAdd as CreateIcon
+  NoteAdd as CreateIcon,
+  Add as AddIcon
 } from '@mui/icons-material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -51,6 +53,7 @@ const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [coursesLoading, setCoursesLoading] = useState(false);
   
   // Set default due date to tomorrow at 11:59 PM
   const getDefaultDueDate = () => {
@@ -98,10 +101,13 @@ const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
 
   const loadCourses = async () => {
     try {
+      setCoursesLoading(true);
       const coursesData = await getCourses();
       setCourses(coursesData);
     } catch (error: any) {
       setError('Failed to load courses');
+    } finally {
+      setCoursesLoading(false);
     }
   };
 
@@ -164,6 +170,8 @@ const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
     setError(null);
     onClose();
   };
+
+  const isFormValid = form.title.trim() && form.prompt.trim() && form.due_date && form.course_id > 0;
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -244,11 +252,11 @@ const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
                   value={form.course_id}
                   onChange={(e) => setForm({ ...form, course_id: e.target.value as number })}
                   label="Course"
-                  disabled={!!preselectedCourseId}
+                  disabled={coursesLoading || !!preselectedCourseId}
                   sx={{ borderRadius: 3 }}
                 >
                   <MenuItem value={0} disabled>
-                    Select a course
+                    {coursesLoading ? 'Loading courses...' : 'Select a course'}
                   </MenuItem>
                   {courses.map((course) => (
                     <MenuItem key={course.id} value={course.id}>
@@ -388,7 +396,8 @@ const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
             <Button
               type="submit"
               variant="contained"
-              disabled={loading}
+              disabled={loading || !isFormValid}
+              startIcon={loading ? <CircularProgress size={18} /> : <SaveIcon />}
               sx={{
                 textTransform: 'none',
                 fontWeight: 700,
@@ -402,7 +411,6 @@ const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
                   boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`
                 }
               }}
-              startIcon={<SaveIcon />}
             >
               {loading ? 'Creating...' : 'Create Assignment'}
             </Button>

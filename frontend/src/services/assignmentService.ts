@@ -1,10 +1,5 @@
-// Assignment service for FRE-2.1, 2.2, 2.3 - Assignment CRUD operations
-import axios from 'axios';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-
-// Configure axios defaults
-axios.defaults.timeout = 10000;
+// Assignment service for FRE-2.1, 2.2, 2.3 - Assignment CRUD operations with authentication
+import { apiRequest, handleApiError } from './apiClient';
 
 export interface Assignment {
   id: number;
@@ -43,38 +38,10 @@ export interface AssignmentListItem {
   days_until_due?: number;
 }
 
-// Error handling wrapper
-const handleApiError = (error: any) => {
-  if (error.response?.data?.detail) {
-    // Handle FastAPI validation errors (array format)
-    if (Array.isArray(error.response.data.detail)) {
-      const validationErrors = error.response.data.detail.map((err: any) => {
-        const field = err.loc?.[err.loc.length - 1] || 'field';
-        return `${field}: ${err.msg || 'Invalid value'}`;
-      }).join(', ');
-      throw new Error(validationErrors);
-    }
-    // Handle simple error messages
-    throw new Error(error.response.data.detail);
-  } else if (error.response?.data?.message) {
-    throw new Error(error.response.data.message);
-  } else if (error.response) {
-    // Server responded with error status
-    throw new Error(`Server error: ${error.response.status}`);
-  } else if (error.request) {
-    // Network error
-    throw new Error('Network error - please check your connection');
-  } else {
-    // Other error
-    throw new Error('An unexpected error occurred');
-  }
-};
-
 // FRE-2.1: List assignments for a course
 export async function getAssignmentsByCourse(courseId: number): Promise<AssignmentListItem[]> {
   try {
-    const response = await axios.get(`${API_BASE}/assignments/courses/${courseId}/assignments`);
-    return response.data;
+    return await apiRequest<AssignmentListItem[]>('GET', `/assignments/courses/${courseId}/assignments`);
   } catch (error) {
     handleApiError(error);
     return [];
@@ -84,8 +51,7 @@ export async function getAssignmentsByCourse(courseId: number): Promise<Assignme
 // Get a single assignment by ID
 export async function getAssignment(id: number): Promise<Assignment> {
   try {
-    const response = await axios.get(`${API_BASE}/assignments/${id}`);
-    return response.data;
+    return await apiRequest<Assignment>('GET', `/assignments/${id}`);
   } catch (error) {
     handleApiError(error);
     throw error;
@@ -95,8 +61,7 @@ export async function getAssignment(id: number): Promise<Assignment> {
 // FRE-2.2: Create a new assignment
 export async function createAssignment(data: AssignmentCreate): Promise<Assignment> {
   try {
-    const response = await axios.post(`${API_BASE}/assignments/`, data);
-    return response.data;
+    return await apiRequest<Assignment>('POST', '/assignments/', data);
   } catch (error) {
     handleApiError(error);
     throw error;
@@ -106,8 +71,7 @@ export async function createAssignment(data: AssignmentCreate): Promise<Assignme
 // FRE-2.3: Update an assignment
 export async function updateAssignment(id: number, data: AssignmentUpdate): Promise<Assignment> {
   try {
-    const response = await axios.put(`${API_BASE}/assignments/${id}`, data);
-    return response.data;
+    return await apiRequest<Assignment>('PUT', `/assignments/${id}`, data);
   } catch (error) {
     handleApiError(error);
     throw error;
@@ -117,7 +81,7 @@ export async function updateAssignment(id: number, data: AssignmentUpdate): Prom
 // FRE-2.3: Delete an assignment
 export async function deleteAssignment(id: number): Promise<void> {
   try {
-    await axios.delete(`${API_BASE}/assignments/${id}`);
+    await apiRequest<void>('DELETE', `/assignments/${id}`);
   } catch (error) {
     handleApiError(error);
     throw error;
@@ -127,8 +91,7 @@ export async function deleteAssignment(id: number): Promise<void> {
 // Additional utility functions
 export async function getUpcomingAssignments(limit: number = 10): Promise<AssignmentListItem[]> {
   try {
-    const response = await axios.get(`${API_BASE}/assignments/upcoming?limit=${limit}`);
-    return response.data;
+    return await apiRequest<AssignmentListItem[]>('GET', `/assignments/upcoming?limit=${limit}`);
   } catch (error) {
     handleApiError(error);
     return [];
@@ -137,8 +100,7 @@ export async function getUpcomingAssignments(limit: number = 10): Promise<Assign
 
 export async function getOverdueAssignments(): Promise<AssignmentListItem[]> {
   try {
-    const response = await axios.get(`${API_BASE}/assignments/overdue`);
-    return response.data;
+    return await apiRequest<AssignmentListItem[]>('GET', '/assignments/overdue');
   } catch (error) {
     handleApiError(error);
     return [];
@@ -181,9 +143,8 @@ export async function getAllAssignments(filters?: AssignmentFilters): Promise<As
       if (filters.offset) params.append('offset', filters.offset.toString());
     }
     
-    const url = `${API_BASE}/assignments/${params.toString() ? `?${params.toString()}` : ''}`;
-    const response = await axios.get(url);
-    return response.data;
+    const endpoint = `/assignments/${params.toString() ? `?${params.toString()}` : ''}`;
+    return await apiRequest<AssignmentListItem[]>('GET', endpoint);
   } catch (error) {
     handleApiError(error);
     return [];
@@ -192,8 +153,7 @@ export async function getAllAssignments(filters?: AssignmentFilters): Promise<As
 
 export async function getAssignmentStats(): Promise<AssignmentStats> {
   try {
-    const response = await axios.get(`${API_BASE}/assignments/stats`);
-    return response.data;
+    return await apiRequest<AssignmentStats>('GET', '/assignments/stats');
   } catch (error) {
     handleApiError(error);
     throw error;

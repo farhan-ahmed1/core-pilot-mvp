@@ -16,12 +16,16 @@ from crud.assignment import (
     update_assignment,
     delete_assignment,
     get_upcoming_assignments,
-    get_overdue_assignments
+    get_overdue_assignments,
+    get_assignments_by_user
 )
-from database.models import Assignment, Course
+from database.models import Assignment, Course, User
 from sqlalchemy import func
 from datetime import datetime, timedelta, timezone
 import logging
+
+# Import the new authentication middleware
+from utils.auth_middleware import get_current_user, get_current_user_id
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -29,33 +33,38 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/assignments", tags=["assignments"])
 
-# --- Dummy user auth for Sprint 0 ---
-def get_current_user_id():
-    # In Sprint 0, always return user_id=1
-    return 1
-
 # IMPORTANT: Define specific routes BEFORE parameterized routes to avoid conflicts
 
 @router.get("/stats", response_model=dict)
-def get_assignment_statistics(db: Session = Depends(get_db)):
-    """Get assignment statistics and analytics"""
+def get_assignment_statistics(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get assignment statistics and analytics for the current user"""
     try:
         now = datetime.now(timezone.utc)
         soon_threshold = now + timedelta(days=7)
         
-        total_assignments = db.query(Assignment).count()
-        overdue_count = db.query(Assignment).filter(Assignment.due_date < now).count()
-        due_soon_count = db.query(Assignment).filter(
+        # Filter assignments by user's courses
+        user_assignments = db.query(Assignment).join(Course).filter(
+            Course.user_id == current_user.id
+        )
+        
+        total_assignments = user_assignments.count()
+        overdue_count = user_assignments.filter(Assignment.due_date < now).count()
+        due_soon_count = user_assignments.filter(
             Assignment.due_date >= now,
             Assignment.due_date <= soon_threshold
         ).count()
-        upcoming_count = db.query(Assignment).filter(Assignment.due_date > soon_threshold).count()
+        upcoming_count = user_assignments.filter(Assignment.due_date > soon_threshold).count()
         
-        # Course distribution
+        # Course distribution for user's courses
         course_stats = db.query(
             Course.name,
             func.count(Assignment.id).label('assignment_count')
-        ).join(Assignment).group_by(Course.id, Course.name).all()
+        ).join(Assignment).filter(
+            Course.user_id == current_user.id
+        ).group_by(Course.id, Course.name).all()
         
         return {
             "total_assignments": total_assignments,
@@ -73,11 +82,15 @@ def get_assignment_statistics(db: Session = Depends(get_db)):
         )
 
 @router.get("/upcoming", response_model=List[AssignmentListResponse])
-def list_upcoming_assignments(limit: int = 10, db: Session = Depends(get_db)):
-    """Get upcoming assignments across all courses"""
+def list_upcoming_assignments(
+    limit: int = 10, 
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get upcoming assignments for the current user's courses"""
     try:
-        assignments = get_upcoming_assignments(db, limit=limit)
-        logger.info(f"Retrieved {len(assignments)} upcoming assignments")
+        assignments = get_upcoming_assignments(db, user_id=current_user.id, limit=limit)
+        logger.info(f"Retrieved {len(assignments)} upcoming assignments for user {current_user.id}")
         return assignments
     except Exception as e:
         logger.error(f"Error listing upcoming assignments: {str(e)}")
@@ -87,11 +100,14 @@ def list_upcoming_assignments(limit: int = 10, db: Session = Depends(get_db)):
         )
 
 @router.get("/overdue", response_model=List[AssignmentListResponse])
-def list_overdue_assignments(db: Session = Depends(get_db)):
-    """Get overdue assignments across all courses"""
+def list_overdue_assignments(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get overdue assignments for the current user's courses"""
     try:
-        assignments = get_overdue_assignments(db)
-        logger.info(f"Retrieved {len(assignments)} overdue assignments")
+        assignments = get_overdue_assignments(db, user_id=current_user.id)
+        logger.info(f"Retrieved {len(assignments)} overdue assignments for user {current_user.id}")
         return assignments
     except Exception as e:
         logger.error(f"Error listing overdue assignments: {str(e)}")
@@ -109,17 +125,30 @@ def list_all_assignments(
     order: str = Query("asc", description="Sort order: asc, desc"),
     limit: int = Query(50, le=100, description="Maximum number of assignments to return"),
     offset: int = Query(0, ge=0, description="Number of assignments to skip"),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get all assignments with advanced filtering, search, and sorting (Enhanced FRE-2.1)"""
+    """Get all assignments for the current user with advanced filtering, search, and sorting (Enhanced FRE-2.1)"""
     try:
-        logger.info(f"Listing assignments with filters - status: {status}, course_id: {course_id}, search: {search}")
+        logger.info(f"Listing assignments for user {current_user.id} with filters - status: {status}, course_id: {course_id}, search: {search}")
         
-        # Start with base query
-        query = db.query(Assignment).join(Course)
+        # Start with base query - only assignments from user's courses
+        query = db.query(Assignment).join(Course).filter(
+            Course.user_id == current_user.id
+        )
         
         # Apply filters
         if course_id:
+            # Verify user owns this course
+            course = db.query(Course).filter(
+                Course.id == course_id,
+                Course.user_id == current_user.id
+            ).first()
+            if not course:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Course not found or access denied"
+                )
             query = query.filter(Assignment.course_id == course_id)
         
         if search:
@@ -158,7 +187,7 @@ def list_all_assignments(
         # Apply pagination
         assignments = query.offset(offset).limit(limit).all()
         
-        logger.info(f"Retrieved {len(assignments)} assignments")
+        logger.info(f"Retrieved {len(assignments)} assignments for user {current_user.id}")
         return assignments
         
     except Exception as e:
@@ -169,10 +198,27 @@ def list_all_assignments(
         )
 
 @router.get("/courses/{course_id}/assignments", response_model=List[AssignmentListResponse])
-def list_assignments_for_course(course_id: int, db: Session = Depends(get_db)):
-    """Get all assignments for a specific course (FRE-2.1)"""
+def list_assignments_for_course(
+    course_id: int, 
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get all assignments for a specific course (FRE-2.1) - only if user owns the course"""
     try:
-        logger.info(f"Retrieving assignments for course {course_id}")
+        logger.info(f"Retrieving assignments for course {course_id} by user {current_user.id}")
+        
+        # Verify user owns this course
+        course = db.query(Course).filter(
+            Course.id == course_id,
+            Course.user_id == current_user.id
+        ).first()
+        
+        if not course:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Course not found or access denied"
+            )
+        
         assignments = get_assignments_by_course(db, course_id)
         logger.info(f"Retrieved {len(assignments)} assignments for course {course_id}")
         return assignments
@@ -186,10 +232,26 @@ def list_assignments_for_course(course_id: int, db: Session = Depends(get_db)):
         )
 
 @router.post("/", response_model=AssignmentResponse, status_code=status.HTTP_201_CREATED)
-def create_new_assignment(assignment: AssignmentCreate, db: Session = Depends(get_db)):
-    """Create a new assignment (FRE-2.2)"""
+def create_new_assignment(
+    assignment: AssignmentCreate, 
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Create a new assignment (FRE-2.2) - only in courses owned by current user"""
     try:
-        logger.info(f"Creating assignment: {assignment.title} for course {assignment.course_id}")
+        logger.info(f"Creating assignment: {assignment.title} for course {assignment.course_id} by user {current_user.id}")
+        
+        # Verify user owns the course
+        course = db.query(Course).filter(
+            Course.id == assignment.course_id,
+            Course.user_id == current_user.id
+        ).first()
+        
+        if not course:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Course not found or access denied"
+            )
         
         db_assignment = create_assignment(db, assignment)
         logger.info(f"Successfully created assignment with ID: {db_assignment.id}")
@@ -204,9 +266,14 @@ def create_new_assignment(assignment: AssignmentCreate, db: Session = Depends(ge
         )
 
 # NOTE: Place parameterized routes AFTER specific routes
+
 @router.get("/{assignment_id}", response_model=AssignmentResponse)
-def get_assignment(assignment_id: int, db: Session = Depends(get_db)):
-    """Get a specific assignment by ID"""
+def get_assignment(
+    assignment_id: int, 
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get a specific assignment by ID - only if user owns the course"""
     try:
         assignment = get_assignment_by_id(db, assignment_id)
         if not assignment:
@@ -214,11 +281,24 @@ def get_assignment(assignment_id: int, db: Session = Depends(get_db)):
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Assignment not found"
             )
+        
+        # Verify user owns the course this assignment belongs to
+        course = db.query(Course).filter(
+            Course.id == assignment.course_id,
+            Course.user_id == current_user.id
+        ).first()
+        
+        if not course:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Assignment not found or access denied"
+            )
+        
         return assignment
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error retrieving assignment {assignment_id}: {str(e)}")
+        logger.error(f"Error getting assignment {assignment_id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve assignment"
@@ -228,17 +308,34 @@ def get_assignment(assignment_id: int, db: Session = Depends(get_db)):
 def update_existing_assignment(
     assignment_id: int, 
     assignment_update: AssignmentUpdate, 
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Update an existing assignment (FRE-2.3)"""
+    """Update an existing assignment (FRE-2.3) - only if user owns the course"""
     try:
-        logger.info(f"Updating assignment {assignment_id}")
-        updated_assignment = update_assignment(db, assignment_id, assignment_update)
-        if not updated_assignment:
+        logger.info(f"Updating assignment {assignment_id} by user {current_user.id}")
+        
+        # Get assignment and verify ownership
+        assignment = get_assignment_by_id(db, assignment_id)
+        if not assignment:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Assignment not found"
             )
+        
+        # Verify user owns the course this assignment belongs to
+        course = db.query(Course).filter(
+            Course.id == assignment.course_id,
+            Course.user_id == current_user.id
+        ).first()
+        
+        if not course:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Assignment not found or access denied"
+            )
+        
+        updated_assignment = update_assignment(db, assignment_id, assignment_update)
         logger.info(f"Successfully updated assignment {assignment_id}")
         return updated_assignment
     except HTTPException:
@@ -251,16 +348,42 @@ def update_existing_assignment(
         )
 
 @router.delete("/{assignment_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_existing_assignment(assignment_id: int, db: Session = Depends(get_db)):
-    """Delete an assignment (FRE-2.3)"""
+def delete_existing_assignment(
+    assignment_id: int, 
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Delete an assignment (FRE-2.3) - only if user owns the course"""
     try:
-        logger.info(f"Deleting assignment {assignment_id}")
+        logger.info(f"Deleting assignment {assignment_id} by user {current_user.id}")
+        
+        # Get assignment and verify ownership
+        assignment = get_assignment_by_id(db, assignment_id)
+        if not assignment:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Assignment not found"
+            )
+        
+        # Verify user owns the course this assignment belongs to
+        course = db.query(Course).filter(
+            Course.id == assignment.course_id,
+            Course.user_id == current_user.id
+        ).first()
+        
+        if not course:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Assignment not found or access denied"
+            )
+        
         success = delete_assignment(db, assignment_id)
         if not success:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Assignment not found"
             )
+        
         logger.info(f"Successfully deleted assignment {assignment_id}")
         return None
     except HTTPException:

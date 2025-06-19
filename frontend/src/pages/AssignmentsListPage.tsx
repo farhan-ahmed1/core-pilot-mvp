@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
-  Container,
   Card,
   CardContent,
   Button,
@@ -48,8 +47,8 @@ import {
 import { alpha, useTheme } from '@mui/material/styles';
 
 // Import shared components
-import Header from '../components/Header';
 import AssignmentDialog from '../components/AssignmentDialog';
+import LoadingScreen from '../components/LoadingScreen';
 
 // Import API functions
 import {
@@ -81,7 +80,11 @@ function TabPanel(props: TabPanelProps) {
       aria-labelledby={`assignments-tab-${index}`}
       {...other}
     >
-      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
+      {value === index && (
+        <Box sx={{ py: 3 }}>
+          {children}
+        </Box>
+      )}
     </div>
   );
 }
@@ -377,343 +380,313 @@ const AssignmentsListPage: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <Box sx={{ flexGrow: 1, minHeight: '100vh', bgcolor: 'grey.50' }}>
-        <Header title="Core Pilot" />
-        <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-          <Skeleton variant="rectangular" height={200} sx={{ mb: 4, borderRadius: 3 }} />
-          <Grid container spacing={3}>
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Grid size={{xs: 12, md: 6, lg: 4}} key={i}>
-                <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 3 }} />
-              </Grid>
-            ))}
-          </Grid>
-        </Container>
-      </Box>
-    );
+    return <LoadingScreen message="Loading assignments..." />;
   }
 
   return (
-    <Box sx={{ flexGrow: 1, minHeight: '100vh', bgcolor: 'grey.50' }}>
-      <Header title="Core Pilot" />
-      
-      <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-        {/* Hero Section with Statistics */}
-        <Fade in timeout={800}>
+    <>
+      {/* Hero Section with Statistics */}
+      <Fade in timeout={800}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 4,
+            mb: 4,
+            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+            color: 'white',
+            borderRadius: 4,
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
+          {/* Decorative background elements */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: -50,
+              right: -50,
+              width: 200,
+              height: 200,
+              borderRadius: '50%',
+              bgcolor: alpha('#fff', 0.1),
+              zIndex: 0
+            }}
+          />
+          
+          <Box sx={{ position: 'relative', zIndex: 1 }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+              <Box>
+                <Typography variant="h3" component="h1" fontWeight="800" gutterBottom>
+                  Assignment Center
+                </Typography>
+                <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 400 }}>
+                  Manage and track all your assignments in one place
+                </Typography>
+              </Box>
+              <Avatar
+                sx={{
+                  width: 80,
+                  height: 80,
+                  bgcolor: alpha('#fff', 0.15),
+                  border: `3px solid ${alpha('#fff', 0.3)}`
+                }}
+              >
+                <RocketIcon sx={{ fontSize: 40 }} />
+              </Avatar>
+            </Box>
+
+            {/* Statistics Grid */}
+            {!statsLoading && stats && (
+              <Grid container spacing={3}>
+                <Grid size={{xs: 12, sm: 6, md: 3}}>
+                  <Card sx={{ 
+                    bgcolor: alpha('#fff', 0.15), 
+                    backdropFilter: 'blur(10px)',
+                    borderRadius: 3,
+                    border: `1px solid ${alpha('#fff', 0.2)}`
+                  }}>
+                    <CardContent sx={{ textAlign: 'center', color: 'white', p: 3 }}>
+                      <TaskIcon sx={{ fontSize: 40, mb: 1 }} />
+                      <Typography variant="h3" fontWeight="800">{stats.total_assignments}</Typography>
+                      <Typography variant="body1" fontWeight={600}>Total Assignments</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid size={{xs: 12, sm: 6, md: 3}}>
+                  <Card sx={{ 
+                    bgcolor: alpha('#fff', 0.15), 
+                    backdropFilter: 'blur(10px)',
+                    borderRadius: 3,
+                    border: `1px solid ${alpha('#fff', 0.2)}`
+                  }}>
+                    <CardContent sx={{ textAlign: 'center', color: 'white', p: 3 }}>
+                      <WarningIcon sx={{ fontSize: 40, mb: 1 }} />
+                      <Typography variant="h3" fontWeight="800">{stats.overdue}</Typography>
+                      <Typography variant="body1" fontWeight={600}>Overdue</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid size={{xs: 12, sm: 6, md: 3}}>
+                  <Card sx={{ 
+                    bgcolor: alpha('#fff', 0.15), 
+                    backdropFilter: 'blur(10px)',
+                    borderRadius: 3,
+                    border: `1px solid ${alpha('#fff', 0.2)}`
+                  }}>
+                    <CardContent sx={{ textAlign: 'center', color: 'white', p: 3 }}>
+                      <AccessTimeIcon sx={{ fontSize: 40, mb: 1 }} />
+                      <Typography variant="h3" fontWeight="800">{stats.due_soon}</Typography>
+                      <Typography variant="body1" fontWeight={600}>Due Soon</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid size={{xs: 12, sm: 6, md: 3}}>
+                  <Card sx={{ 
+                    bgcolor: alpha('#fff', 0.15), 
+                    backdropFilter: 'blur(10px)',
+                    borderRadius: 3,
+                    border: `1px solid ${alpha('#fff', 0.2)}`
+                  }}>
+                    <CardContent sx={{ textAlign: 'center', color: 'white', p: 3 }}>
+                      <TrendingUpIcon sx={{ fontSize: 40, mb: 1 }} />
+                      <Typography variant="h3" fontWeight="800">{stats.upcoming}</Typography>
+                      <Typography variant="body1" fontWeight={600}>Upcoming</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            )}
+          </Box>
+        </Paper>
+      </Fade>
+
+      {/* Filters and Controls */}
+      <Card elevation={2} sx={{ mb: 4, borderRadius: 3 }}>
+        <CardContent sx={{ p: 3 }}>
+          {/* Tabs for filtering by status */}
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+            <Tabs
+              value={activeTab}
+              onChange={handleTabChange}
+              aria-label="assignment status tabs"
+              variant="scrollable"
+              scrollButtons="auto"
+              sx={{
+                '& .MuiTab-root': {
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  borderRadius: 2,
+                  minHeight: 48
+                }
+              }}
+            >
+              <Tab 
+                label="All Assignments" 
+                icon={<Badge badgeContent={stats?.total_assignments} color="primary" />}
+                iconPosition="end"
+              />
+              <Tab 
+                label="Overdue" 
+                icon={<Badge badgeContent={stats?.overdue} color="error" />}
+                iconPosition="end"
+              />
+              <Tab 
+                label="Due Soon" 
+                icon={<Badge badgeContent={stats?.due_soon} color="warning" />}
+                iconPosition="end"
+              />
+              <Tab 
+                label="Upcoming" 
+                icon={<Badge badgeContent={stats?.upcoming} color="success" />}
+                iconPosition="end"
+              />
+            </Tabs>
+          </Box>
+
+          {/* Search and Filter Controls */}
+          <Grid container spacing={3} alignItems="center">
+            <Grid size={{xs: 12, md: 4}}>
+              <TextField
+                fullWidth
+                placeholder="Search assignments..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchQuery && (
+                    <InputAdornment position="end">
+                      <IconButton size="small" onClick={() => setSearchQuery('')}>
+                        ×
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+              />
+            </Grid>
+
+            <Grid size={{xs: 12, md: 3}}>
+              <FormControl fullWidth>
+                <InputLabel>Filter by Course</InputLabel>
+                <Select
+                  value={selectedCourse}
+                  onChange={(e) => handleCourseFilter(e.target.value as number | '')}
+                  label="Filter by Course"
+                  sx={{ borderRadius: 3 }}
+                >
+                  <MenuItem value="">All Courses</MenuItem>
+                  {courses.map((course) => (
+                    <MenuItem key={course.id} value={course.id}>
+                      {course.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid size={{xs: 12, md: 3}}>
+              <FormControl fullWidth>
+                <InputLabel>Sort By</InputLabel>
+                <Select
+                  value={filters.sort_by}
+                  onChange={(e) => handleSortChange(e.target.value)}
+                  label="Sort By"
+                  sx={{ borderRadius: 3 }}
+                >
+                  <MenuItem value="due_date">Due Date</MenuItem>
+                  <MenuItem value="title">Title</MenuItem>
+                  <MenuItem value="created_at">Created Date</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid size={{xs: 12, md: 2}}>
+              <Box display="flex" gap={1}>
+                <Button
+                  variant="outlined"
+                  onClick={handleOrderChange}
+                  startIcon={<SortIcon />}
+                  sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 600 }}
+                >
+                  {filters.order === 'asc' ? 'Ascending' : 'Descending'}
+                </Button>
+                
+                <ToggleButtonGroup
+                  value={viewMode}
+                  exclusive
+                  onChange={handleViewModeChange}
+                  aria-label="view mode"
+                  size="small"
+                >
+                  <ToggleButton value="grid" aria-label="grid view">
+                    <GridViewIcon />
+                  </ToggleButton>
+                  <ToggleButton value="list" aria-label="list view">
+                    <ListViewIcon />
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </Box>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      {/* Assignments Content */}
+      <TabPanel value={activeTab} index={activeTab}>
+        {filteredAssignments.length === 0 ? (
           <Paper
             elevation={0}
             sx={{
-              p: 4,
-              mb: 4,
-              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-              color: 'white',
+              p: 8,
+              textAlign: 'center',
+              bgcolor: 'background.paper',
               borderRadius: 4,
-              position: 'relative',
-              overflow: 'hidden'
+              border: 2,
+              borderColor: 'divider',
+              borderStyle: 'dashed'
             }}
           >
-            {/* Decorative background elements */}
-            <Box
-              sx={{
-                position: 'absolute',
-                top: -50,
-                right: -50,
-                width: 200,
-                height: 200,
-                borderRadius: '50%',
-                bgcolor: alpha('#fff', 0.1),
-                zIndex: 0
-              }}
-            />
-            <Box
-              sx={{
-                position: 'absolute',
-                bottom: -30,
-                left: -30,
-                width: 150,
-                height: 150,
-                borderRadius: '50%',
-                bgcolor: alpha('#fff', 0.05),
-                zIndex: 0
-              }}
-            />
-
-            <Box sx={{ position: 'relative', zIndex: 1 }}>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                <Box>
-                  <Typography variant="h3" component="h1" fontWeight="800" gutterBottom>
-                    Assignment Center
-                  </Typography>
-                  <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 400 }}>
-                    Manage and track all your assignments in one place
-                  </Typography>
-                </Box>
-                <Avatar
-                  sx={{
-                    width: 80,
-                    height: 80,
-                    bgcolor: alpha('#fff', 0.15),
-                    border: `3px solid ${alpha('#fff', 0.3)}`
-                  }}
-                >
-                  <RocketIcon sx={{ fontSize: 40 }} />
-                </Avatar>
-              </Box>
-
-              {/* Statistics Grid */}
-              {!statsLoading && stats && (
-                <Grid container spacing={3}>
-                  <Grid size={{xs: 12, sm: 6, md: 3}}>
-                    <Card sx={{ 
-                      bgcolor: alpha('#fff', 0.15), 
-                      backdropFilter: 'blur(10px)',
-                      borderRadius: 3,
-                      border: `1px solid ${alpha('#fff', 0.2)}`
-                    }}>
-                      <CardContent sx={{ textAlign: 'center', color: 'white', p: 3 }}>
-                        <TaskIcon sx={{ fontSize: 40, mb: 1 }} />
-                        <Typography variant="h3" fontWeight="800">{stats.total_assignments}</Typography>
-                        <Typography variant="body1" fontWeight={600}>Total Assignments</Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  <Grid size={{xs: 12, sm: 6, md: 3}}>
-                    <Card sx={{ 
-                      bgcolor: alpha('#fff', 0.15), 
-                      backdropFilter: 'blur(10px)',
-                      borderRadius: 3,
-                      border: `1px solid ${alpha('#fff', 0.2)}`
-                    }}>
-                      <CardContent sx={{ textAlign: 'center', color: 'white', p: 3 }}>
-                        <WarningIcon sx={{ fontSize: 40, mb: 1 }} />
-                        <Typography variant="h3" fontWeight="800">{stats.overdue}</Typography>
-                        <Typography variant="body1" fontWeight={600}>Overdue</Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  <Grid size={{xs: 12, sm: 6, md: 3}}>
-                    <Card sx={{ 
-                      bgcolor: alpha('#fff', 0.15), 
-                      backdropFilter: 'blur(10px)',
-                      borderRadius: 3,
-                      border: `1px solid ${alpha('#fff', 0.2)}`
-                    }}>
-                      <CardContent sx={{ textAlign: 'center', color: 'white', p: 3 }}>
-                        <AccessTimeIcon sx={{ fontSize: 40, mb: 1 }} />
-                        <Typography variant="h3" fontWeight="800">{stats.due_soon}</Typography>
-                        <Typography variant="body1" fontWeight={600}>Due Soon</Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  <Grid size={{xs: 12, sm: 6, md: 3}}>
-                    <Card sx={{ 
-                      bgcolor: alpha('#fff', 0.15), 
-                      backdropFilter: 'blur(10px)',
-                      borderRadius: 3,
-                      border: `1px solid ${alpha('#fff', 0.2)}`
-                    }}>
-                      <CardContent sx={{ textAlign: 'center', color: 'white', p: 3 }}>
-                        <TrendingUpIcon sx={{ fontSize: 40, mb: 1 }} />
-                        <Typography variant="h3" fontWeight="800">{stats.upcoming}</Typography>
-                        <Typography variant="body1" fontWeight={600}>Upcoming</Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                </Grid>
-              )}
-            </Box>
-          </Paper>
-        </Fade>
-
-        {/* Filters and Controls */}
-        <Card elevation={2} sx={{ mb: 4, borderRadius: 3 }}>
-          <CardContent sx={{ p: 3 }}>
-            {/* Tabs for filtering by status */}
-            <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-              <Tabs
-                value={activeTab}
-                onChange={handleTabChange}
-                aria-label="assignment status tabs"
-                variant="scrollable"
-                scrollButtons="auto"
-                sx={{
-                  '& .MuiTab-root': {
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    borderRadius: 2,
-                    minHeight: 48
-                  }
-                }}
-              >
-                <Tab 
-                  label="All Assignments" 
-                  icon={<Badge badgeContent={stats?.total_assignments} color="primary" />}
-                  iconPosition="end"
-                />
-                <Tab 
-                  label="Overdue" 
-                  icon={<Badge badgeContent={stats?.overdue} color="error" />}
-                  iconPosition="end"
-                />
-                <Tab 
-                  label="Due Soon" 
-                  icon={<Badge badgeContent={stats?.due_soon} color="warning" />}
-                  iconPosition="end"
-                />
-                <Tab 
-                  label="Upcoming" 
-                  icon={<Badge badgeContent={stats?.upcoming} color="success" />}
-                  iconPosition="end"
-                />
-              </Tabs>
-            </Box>
-
-            {/* Search and Filter Controls */}
-            <Grid container spacing={3} alignItems="center">
-              <Grid size={{xs: 12, md: 4}}>
-                <TextField
-                  fullWidth
-                  placeholder="Search assignments..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon />
-                      </InputAdornment>
-                    ),
-                    endAdornment: searchQuery && (
-                      <InputAdornment position="end">
-                        <IconButton size="small" onClick={() => setSearchQuery('')}>
-                          ×
-                        </IconButton>
-                      </InputAdornment>
-                    )
-                  }}
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                />
-              </Grid>
-
-              <Grid size={{xs: 12, md: 3}}>
-                <FormControl fullWidth>
-                  <InputLabel>Filter by Course</InputLabel>
-                  <Select
-                    value={selectedCourse}
-                    onChange={(e) => handleCourseFilter(e.target.value as number | '')}
-                    label="Filter by Course"
-                    sx={{ borderRadius: 3 }}
-                  >
-                    <MenuItem value="">All Courses</MenuItem>
-                    {courses.map((course) => (
-                      <MenuItem key={course.id} value={course.id}>
-                        {course.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-
-              <Grid size={{xs: 12, md: 3}}>
-                <FormControl fullWidth>
-                  <InputLabel>Sort By</InputLabel>
-                  <Select
-                    value={filters.sort_by}
-                    onChange={(e) => handleSortChange(e.target.value)}
-                    label="Sort By"
-                    sx={{ borderRadius: 3 }}
-                  >
-                    <MenuItem value="due_date">Due Date</MenuItem>
-                    <MenuItem value="title">Title</MenuItem>
-                    <MenuItem value="created_at">Created Date</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-
-              <Grid size={{xs: 12, md: 2}}>
-                <Box display="flex" gap={1}>
-                  <Button
-                    variant="outlined"
-                    onClick={handleOrderChange}
-                    startIcon={<SortIcon />}
-                    sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 600 }}
-                  >
-                    {filters.order === 'asc' ? 'Ascending' : 'Descending'}
-                  </Button>
-                  
-                  <ToggleButtonGroup
-                    value={viewMode}
-                    exclusive
-                    onChange={handleViewModeChange}
-                    aria-label="view mode"
-                    size="small"
-                  >
-                    <ToggleButton value="grid" aria-label="grid view">
-                      <GridViewIcon />
-                    </ToggleButton>
-                    <ToggleButton value="list" aria-label="list view">
-                      <ListViewIcon />
-                    </ToggleButton>
-                  </ToggleButtonGroup>
-                </Box>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-
-        {/* Assignments Content */}
-        <TabPanel value={activeTab} index={activeTab}>
-          {filteredAssignments.length === 0 ? (
-            <Paper
-              elevation={0}
-              sx={{
-                p: 8,
-                textAlign: 'center',
-                bgcolor: 'background.paper',
-                borderRadius: 4,
-                border: 2,
-                borderColor: 'divider',
-                borderStyle: 'dashed'
+            <DashboardIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
+            <Typography variant="h5" gutterBottom fontWeight="bold">
+              No assignments found
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+              {activeTab === 0 
+                ? 'Create your first assignment to get started'
+                : 'No assignments match the current filter criteria'
+              }
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleCreateAssignment}
+              size="large"
+              sx={{ 
+                borderRadius: 3, 
+                textTransform: 'none', 
+                fontWeight: 700,
+                px: 4,
+                py: 1.5 
               }}
             >
-              <DashboardIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
-              <Typography variant="h5" gutterBottom fontWeight="bold">
-                No assignments found
-              </Typography>
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                {activeTab === 0 
-                  ? 'Create your first assignment to get started'
-                  : 'No assignments match the current filter criteria'
-                }
-              </Typography>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={handleCreateAssignment}
-                size="large"
-                sx={{ 
-                  borderRadius: 3, 
-                  textTransform: 'none', 
-                  fontWeight: 700,
-                  px: 4,
-                  py: 1.5 
-                }}
-              >
-                Create Assignment
-              </Button>
-            </Paper>
-          ) : (
-            <Grid container spacing={3}>
-              {filteredAssignments.map((assignment, index) => (
-                <Grid key={assignment.id} size={{xs:12, sm:6, lg:4}} >
-                  {renderAssignmentCard(assignment, index)}
-                </Grid>
-              ))}
-            </Grid>
-          )}
-        </TabPanel>
-      </Container>
+              Create Assignment
+            </Button>
+          </Paper>
+        ) : (
+          <Grid container spacing={3}>
+            {filteredAssignments.map((assignment, index) => (
+              <Grid key={assignment.id} size={{xs:12, sm:6, lg:4}} >
+                {renderAssignmentCard(assignment, index)}
+              </Grid>
+            ))}
+          </Grid>
+        )}
+      </TabPanel>
 
       {/* Assignment Creation Dialog */}
       <AssignmentDialog
@@ -738,7 +711,7 @@ const AssignmentsListPage: React.FC = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Box>
+    </>
   );
 };
 

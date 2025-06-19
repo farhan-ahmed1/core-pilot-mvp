@@ -1,11 +1,37 @@
-// Auth service for FRE-1.1 Sign Up / Sign In
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, UserCredential } from 'firebase/auth';
+// Authentication service for Firebase Auth operations
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut as firebaseSignOut,
+  UserCredential 
+} from 'firebase/auth';
 import { auth } from './firebase';
 
-export async function signIn(email: string, password: string): Promise<UserCredential> {
-  return signInWithEmailAndPassword(auth, email, password);
-}
+export const signIn = async (email: string, password: string): Promise<UserCredential> => {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    return userCredential;
+  } catch (error: any) {
+    console.error('Sign in error:', error);
+    throw new Error(error.message || 'Failed to sign in');
+  }
+};
 
-export async function signUp(email: string, password: string): Promise<UserCredential> {
-  return createUserWithEmailAndPassword(auth, email, password);
-}
+export const signUp = async (email: string, password: string): Promise<UserCredential> => {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    return userCredential;
+  } catch (error: any) {
+    console.error('Sign up error:', error);
+    throw new Error(error.message || 'Failed to create account');
+  }
+};
+
+export const signOut = async (): Promise<void> => {
+  try {
+    await firebaseSignOut(auth);
+  } catch (error: any) {
+    console.error('Sign out error:', error);
+    throw new Error(error.message || 'Failed to sign out');
+  }
+};
