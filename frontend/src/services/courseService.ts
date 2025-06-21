@@ -32,7 +32,6 @@ export interface Assignment {
   course_id: number;
   created_at: string;
   updated_at?: string;
-  status?: 'no_draft' | 'draft_saved' | 'feedback_ready'; // Added for FRE-3.1 status indicator
 }
 
 // FRE-1.3: Get all courses for the authenticated user

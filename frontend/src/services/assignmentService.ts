@@ -12,9 +12,6 @@ export interface Assignment {
   updated_at?: string;
   is_overdue: boolean;
   days_until_due?: number;
-  // FRE-3.1: Add draft and feedback status for status indicators
-  has_draft?: boolean;
-  has_feedback?: boolean;
 }
 
 export interface AssignmentCreate {
@@ -39,9 +36,6 @@ export interface AssignmentListItem {
   course_id: number;
   is_overdue: boolean;
   days_until_due?: number;
-  // FRE-3.1: Add draft and feedback status for status indicators
-  has_draft?: boolean;
-  has_feedback?: boolean;
 }
 
 // FRE-2.1: List assignments for a course
