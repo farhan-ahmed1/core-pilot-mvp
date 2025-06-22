@@ -1,11 +1,6 @@
 import React from 'react';
 import {
-  Box,
-  Stack,
-  Divider,
-  alpha,
-  useTheme
-} from '@mui/material';
+  Stack} from '@mui/material';
 import { ActionCard, ActionCardProps } from '../cards/ActionCard';
 
 export interface ActionFormProps extends Omit<ActionCardProps, 'children'> {
@@ -26,7 +21,6 @@ export const ActionForm: React.FC<ActionFormProps> = ({
   secondaryAction,
   ...cardProps
 }) => {
-  const theme = useTheme();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

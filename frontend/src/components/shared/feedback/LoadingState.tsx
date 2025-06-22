@@ -21,9 +21,7 @@ export interface LoadingStateProps {
 export const LoadingState: React.FC<LoadingStateProps> = ({ 
   message = 'Loading...', 
   size = 'medium',
-  fullScreen = false,
-  variant = 'spinner'
-}) => {
+  fullScreen = false}) => {
   const theme = useTheme();
 
   const getSizeValue = () => {

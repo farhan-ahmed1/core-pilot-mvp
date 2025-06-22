@@ -4,9 +4,7 @@ import {
   AlertProps,
   Snackbar,
   SnackbarProps,
-  IconButton,
-  useTheme
-} from '@mui/material';
+  IconButton} from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 
 export interface CoreAlertProps extends Omit<AlertProps, 'severity'> {
